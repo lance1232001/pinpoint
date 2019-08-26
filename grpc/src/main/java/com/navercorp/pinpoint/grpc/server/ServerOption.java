@@ -17,11 +17,13 @@
 package com.navercorp.pinpoint.grpc.server;
 
 import com.navercorp.pinpoint.common.util.Assert;
+import com.navercorp.pinpoint.grpc.security.SslServerConfig;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author jaehong.kim
+ * @author Taejin Koo
  */
 public class ServerOption {
     public static final int DEFAULT_FLOW_CONTROL_WINDOW = 1048576; // 1MiB
@@ -40,6 +42,9 @@ public class ServerOption {
 
     public static final long DEFAULT_HANDSHAKE_TIMEOUT = TimeUnit.SECONDS.toMillis(120);
     public static final int DEFAULT_RECEIVE_BUFFER_SIZE = 64 * 1024;
+
+    public static final SslServerConfig DEFAULT_SSL_CONFIG = SslServerConfig.DISABLED_CONFIG;
+
 
     // Sets a custom keepalive time, the delay time for sending next keepalive ping.
     private final long keepAliveTime;
@@ -71,7 +76,10 @@ public class ServerOption {
     // ChannelOption
     private final int receiveBufferSize;
 
-    ServerOption(long keepAliveTime, long keepAliveTimeout, long permitKeepAliveTime, long maxConnectionIdle, int maxConcurrentCallsPerConnection, int maxInboundMessageSize, int maxHeaderListSize, long handshakeTimeout, int flowControlWindow, int receiveBufferSize) {
+    private final SslServerConfig sslConfig;
+
+    ServerOption(long keepAliveTime, long keepAliveTimeout, long permitKeepAliveTime, long maxConnectionIdle, int maxConcurrentCallsPerConnection, int maxInboundMessageSize, int maxHeaderListSize,
+                 long handshakeTimeout, int flowControlWindow, int receiveBufferSize, SslServerConfig sslConfig) {
         this.keepAliveTime = keepAliveTime;
         this.keepAliveTimeout = keepAliveTimeout;
         this.permitKeepAliveTime = permitKeepAliveTime;
@@ -82,6 +90,7 @@ public class ServerOption {
         this.handshakeTimeout = handshakeTimeout;
         this.flowControlWindow = flowControlWindow;
         this.receiveBufferSize = receiveBufferSize;
+        this.sslConfig = sslConfig;
     }
 
     public long getKeepAliveTime() {
@@ -136,6 +145,10 @@ public class ServerOption {
         return receiveBufferSize;
     }
 
+    public SslServerConfig getSslConfig() {
+        return sslConfig;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ServerOption{");
@@ -152,6 +165,7 @@ public class ServerOption {
         sb.append(", handshakeTimeout=").append(handshakeTimeout);
         sb.append(", flowControlWindow=").append(flowControlWindow);
         sb.append(", receiveBufferSize=").append(receiveBufferSize);
+        sb.append(", sslConfig=").append(sslConfig);
         sb.append('}');
         return sb.toString();
     }
@@ -180,8 +194,11 @@ public class ServerOption {
 
         private int receiveBufferSize = DEFAULT_RECEIVE_BUFFER_SIZE;
 
+        private SslServerConfig sslConfig = DEFAULT_SSL_CONFIG;
+
         public ServerOption build() {
-            final ServerOption serverOption = new ServerOption(keepAliveTime, keepAliveTimeout, permitKeepAliveTime, maxConnectionIdle, maxConcurrentCallsPerConnection, maxInboundMessageSize, maxHeaderListSize, handshakeTimeout, flowControlWindow, receiveBufferSize);
+            final ServerOption serverOption = new ServerOption(keepAliveTime, keepAliveTimeout, permitKeepAliveTime, maxConnectionIdle, maxConcurrentCallsPerConnection,
+                    maxInboundMessageSize, maxHeaderListSize, handshakeTimeout, flowControlWindow, receiveBufferSize, sslConfig);
             return serverOption;
         }
 
@@ -235,6 +252,10 @@ public class ServerOption {
             this.receiveBufferSize = receiveBufferSize;
         }
 
+        public void setSslConfig(SslServerConfig sslConfig) {
+            this.sslConfig = Assert.requireNonNull(sslConfig, "sslConfig must not be null");
+        }
+
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("Builder{");
@@ -248,8 +269,10 @@ public class ServerOption {
             sb.append(", handshakeTimeout=").append(handshakeTimeout);
             sb.append(", flowControlWindow=").append(flowControlWindow);
             sb.append(", receiveBufferSize=").append(receiveBufferSize);
+            sb.append(", sslConfig=").append(sslConfig);
             sb.append('}');
             return sb.toString();
         }
+
     }
 }

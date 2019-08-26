@@ -17,6 +17,7 @@
 package com.navercorp.pinpoint.collector.config;
 
 import com.navercorp.pinpoint.common.util.Assert;
+import com.navercorp.pinpoint.grpc.security.SslServerConfig;
 import com.navercorp.pinpoint.grpc.server.ServerOption;
 
 import java.util.Objects;
@@ -82,6 +83,10 @@ public final class AgentBaseDataReceiverConfiguration {
         Assert.isTrue(grpcWorkerQueueSize > 0, "grpcWorkerQueueSize must be greater than 0");
         this.grpcWorkerMonitorEnable = CollectorConfiguration.readBoolean(properties, GRPC_WORKER_MONITOR_ENABLE);
         final ServerOption.Builder serverOptionBuilder = GrpcPropertiesServerOptionBuilder.newBuilder(properties, GRPC_PREFIX);
+
+        final SslServerConfig sslServerConfig = SslServerConfig.create(properties);
+        serverOptionBuilder.setSslConfig(sslServerConfig);
+
         this.grpcServerOption = serverOptionBuilder.build();
     }
 

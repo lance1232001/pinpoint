@@ -22,6 +22,9 @@ import com.navercorp.pinpoint.common.util.PinpointThreadFactory;
 import com.navercorp.pinpoint.grpc.ExecutorUtils;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.HeaderReader;
+import com.navercorp.pinpoint.grpc.security.SslContextFactory;
+import com.navercorp.pinpoint.grpc.security.SslServerConfig;
+
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerInterceptor;
@@ -33,10 +36,12 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +120,7 @@ public class ServerFactory {
         this.serverInterceptors.add(serverInterceptor);
     }
 
-    public Server build() {
+    public Server build() throws SSLException {
         InetSocketAddress bindAddress = new InetSocketAddress(this.hostname, this.port);
         NettyServerBuilder serverBuilder = NettyServerBuilder.forAddress(bindAddress);
         serverBuilder.bossEventLoopGroup(bossEventLoopGroup);
@@ -146,6 +151,14 @@ public class ServerFactory {
         HeaderReader<Header> headerReader = new AgentHeaderReader();
         ServerInterceptor headerContext = new HeaderPropagationInterceptor<Header>(headerReader, ServerContext.getAgentInfoKey());
         serverBuilder.intercept(headerContext);
+
+        SslServerConfig sslConfig = serverOption.getSslConfig();
+        if (sslConfig.isEnable()) {
+            logger.debug("Enable sslConfig.({})", sslConfig);
+
+            SslContext sslContext = SslContextFactory.create(sslConfig);
+            serverBuilder.sslContext(sslContext);
+        }
 
         Server server = serverBuilder.build();
         return server;
