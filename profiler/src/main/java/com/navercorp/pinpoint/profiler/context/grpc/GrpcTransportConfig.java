@@ -20,6 +20,10 @@ import com.navercorp.pinpoint.bootstrap.config.DefaultProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.config.ProfilerConfig;
 import com.navercorp.pinpoint.common.util.ByteSizeUnit;
 import com.navercorp.pinpoint.grpc.client.ClientOption;
+import com.navercorp.pinpoint.grpc.security.SslClientConfig;
+
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Woonduk Kang(emeroad)
@@ -79,6 +83,7 @@ public class GrpcTransportConfig {
 
     public void read(ProfilerConfig profilerConfig) {
         final ProfilerConfig.ValueResolver placeHolderResolver = new DefaultProfilerConfig.PlaceHolderResolver();
+
         // Agent
         this.agentCollectorIp = profilerConfig.readString("profiler.transport.grpc.agent.collector.ip", DEFAULT_IP, placeHolderResolver);
         this.agentCollectorPort = profilerConfig.readInt("profiler.transport.grpc.agent.collector.port", DEFAULT_AGENT_COLLECTOR_PORT);
@@ -115,22 +120,22 @@ public class GrpcTransportConfig {
     }
 
     private ClientOption readAgentClientOption(final ProfilerConfig profilerConfig) {
-        return readClientOption(profilerConfig, "profiler.transport.grpc.agent.sender");
+        return readClientOption(profilerConfig, "profiler.transport.grpc.agent.sender", true);
     }
 
     private ClientOption readMetadataClientOption(final ProfilerConfig profilerConfig) {
-        return readClientOption(profilerConfig, "profiler.transport.grpc.metadata.sender");
+        return readClientOption(profilerConfig, "profiler.transport.grpc.metadata.sender", true);
     }
 
     private ClientOption readStatClientOption(final ProfilerConfig profilerConfig) {
-        return readClientOption(profilerConfig, "profiler.transport.grpc.stat.sender");
+        return readClientOption(profilerConfig, "profiler.transport.grpc.stat.sender", false);
     }
 
     private ClientOption readSpanClientOption(final ProfilerConfig profilerConfig) {
-        return readClientOption(profilerConfig, "profiler.transport.grpc.span.sender");
+        return readClientOption(profilerConfig, "profiler.transport.grpc.span.sender", false);
     }
 
-    private ClientOption readClientOption(final ProfilerConfig profilerConfig, final String transportName) {
+    private ClientOption readClientOption(final ProfilerConfig profilerConfig, final String transportName, boolean includeSslConfig) {
         final ClientOption.Builder builder = new ClientOption.Builder();
         builder.setKeepAliveTime(profilerConfig.readLong(transportName + ".keepalive.time.millis", ClientOption.DEFAULT_KEEPALIVE_TIME));
         builder.setKeepAliveTimeout(profilerConfig.readLong(transportName + ".keepalive.timeout.millis", ClientOption.DEFAULT_KEEPALIVE_TIMEOUT));
@@ -141,7 +146,21 @@ public class GrpcTransportConfig {
         builder.setWriteBufferHighWaterMark(readByteSize(profilerConfig, transportName + ".write.buffer.highwatermark", ClientOption.DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK));
         builder.setWriteBufferLowWaterMark(readByteSize(profilerConfig, transportName + ".write.buffer.lowwatermark", ClientOption.DEFAULT_WRITE_BUFFER_LOW_WATER_MARK));
 
+        if (includeSslConfig) {
+            SslClientConfig sslConfig = getSslConfig(profilerConfig);
+            builder.setSslConfig(sslConfig);
+        }
+
         return builder.build();
+    }
+
+    private SslClientConfig getSslConfig(final ProfilerConfig profilerConfig) {
+        Map<String, String> sslPropertiesMap = profilerConfig.readPattern("profiler.transport.grpc.ssl.*");
+
+        Properties sslProperties = new Properties();
+        sslProperties.putAll(sslPropertiesMap);
+
+        return SslClientConfig.create(sslProperties);
     }
 
     private int readByteSize(final ProfilerConfig profilerConfig, final String propertyName, final int defaultValue) {

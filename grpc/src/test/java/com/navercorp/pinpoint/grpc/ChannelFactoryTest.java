@@ -54,6 +54,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -104,7 +105,7 @@ public class ChannelFactoryTest {
     }
 
     @Test
-    public void build() throws InterruptedException {
+    public void build() throws InterruptedException, SSLException {
 
         HeaderFactory<Header> headerFactory = new AgentHeaderFactory("agentId", "appName", System.currentTimeMillis());
 
@@ -116,7 +117,8 @@ public class ChannelFactoryTest {
         builder.setNameResolverProvider(nameResolverProvider);
         builder.addClientInterceptor(countRecordClientInterceptor);
 
-        ChannelFactory channelFactory = new ChannelFactory(builder.build());
+        ChannelFactoryOption option = builder.build();
+        ChannelFactory channelFactory = new ChannelFactory(option);
         ManagedChannel managedChannel = channelFactory.build("test-channel", "127.0.0.1", PORT);
         managedChannel.getState(false);
 

@@ -39,6 +39,7 @@ import io.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -67,7 +68,7 @@ public class MetadataClientMock {
     private final AtomicInteger responseCounter = new AtomicInteger(0);
     private final List<String> responseList = new ArrayList<>();
 
-    public MetadataClientMock(final String host, final int port, final boolean agentHeader) {
+    public MetadataClientMock(final String host, final int port, final boolean agentHeader) throws SSLException {
         HeaderFactory headerFactory = new AgentHeaderFactory("mockAgentId", "mockApplicationName", System.currentTimeMillis());
         ChannelFactoryOption.Builder builder = ChannelFactoryOption.newBuilder();
         builder.setHeaderFactory(headerFactory);

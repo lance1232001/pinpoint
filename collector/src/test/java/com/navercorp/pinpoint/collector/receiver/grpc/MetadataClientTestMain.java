@@ -18,6 +18,7 @@ package com.navercorp.pinpoint.collector.receiver.grpc;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 
+import javax.net.ssl.SSLException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,7 +27,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class MetadataClientTestMain {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SSLException {
         MetadataClientMock clientMock = new MetadataClientMock("localhost", 9997, true);
         clientMock.apiMetaData(100);
 

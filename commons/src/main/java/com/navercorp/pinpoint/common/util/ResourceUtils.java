@@ -36,9 +36,16 @@ public final class ResourceUtils {
             return result;
         }
 
-        result = ResourceUtils.class.getClassLoader().getResourceAsStream(filePath);
-        if (result != null) {
-            return result;
+        ClassLoader classLoader = ResourceUtils.class.getClassLoader();
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+
+        if (classLoader != null) {
+            result = classLoader.getResourceAsStream(filePath);
+            if (result != null) {
+                return result;
+            }
         }
 
         final File file = new File(filePath);

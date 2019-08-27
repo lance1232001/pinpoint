@@ -23,26 +23,24 @@ import java.util.Properties;
 /**
  * @author Taejin Koo
  */
-public final class SslServerConfig {
+public class SslClientConfig {
 
-    private static String GRPC_SSL_PREFIX = "collector.receiver.grpc.";
+    private static String GRPC_SSL_PREFIX = "profiler.transport.grpc.";
 
     private static String EMPTY_STRING = "";
 
-    public static SslServerConfig DISABLED_CONFIG = new SslServerConfig(false, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING);
+    public static SslClientConfig DISABLED_CONFIG = new SslClientConfig(false, EMPTY_STRING, EMPTY_STRING);
 
     private final boolean enable;
     private final String sslProviderType;
-    private final String keyFilePath;
-    private final String keyCertChainFilePath;
+    private final String trustCertFilePath;
 
-    public SslServerConfig(boolean enable, String sslProviderType, String keyFilePath, String keyCertChainFilePath) {
+    public SslClientConfig(boolean enable, String sslProviderType, String trustCertFilePath) {
         this.enable = enable;
 
         this.sslProviderType = Assert.requireNonNull(sslProviderType, "sslProviderType must not be null");
 
-        this.keyFilePath = Assert.requireNonNull(keyFilePath, "keyFilePath must not be null");
-        this.keyCertChainFilePath = Assert.requireNonNull(keyCertChainFilePath, "keyCertChainFilePath must not be null");
+        this.trustCertFilePath = Assert.requireNonNull(trustCertFilePath, "trustCertFilePath must not be null");
     }
 
     public boolean isEnable() {
@@ -53,36 +51,30 @@ public final class SslServerConfig {
         return sslProviderType;
     }
 
-    public String getKeyFilePath() {
-        return keyFilePath;
+    public String getTrustCertFilePath() {
+        return trustCertFilePath;
     }
 
-    public String getKeyCertChainFilePath() {
-        return keyCertChainFilePath;
-    }
-
-    public static SslServerConfig create(Properties properties) {
+    public static SslClientConfig create(Properties properties) {
         return create(properties, GRPC_SSL_PREFIX);
     }
 
-    public static SslServerConfig create(Properties properties, String propertyPrefix) {
+    public static SslClientConfig create(Properties properties, String propertyPrefix) {
         Assert.requireNonNull(properties, "properties must not be null");
 
         boolean enable = SslOption.ENABLE.readBoolean(properties, propertyPrefix);
-        String providerType =SslOption.PROVIDER_TYPE.readString(properties, propertyPrefix);
+        String providerType = SslOption.PROVIDER_TYPE.readString(properties, propertyPrefix);
 
-        String keyFilePath = SslOption.KEY_FILE_PATH.readString(properties, propertyPrefix);
-        String keyCertChainFilePath = SslOption.KEY_CERT_CHAIN_FILE_PATH.readString(properties, propertyPrefix);
-        return new SslServerConfig(enable, providerType, keyFilePath, keyCertChainFilePath);
+        String trustCertFilePath = SslOption.TRUST_CERT_FILE_PATH.readString(properties, propertyPrefix);
+        return new SslClientConfig(enable, providerType, trustCertFilePath);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Server{");
+        final StringBuilder sb = new StringBuilder("SslClientConfig{");
         sb.append("enable=").append(enable);
         sb.append(", sslProviderType='").append(sslProviderType).append('\'');
-        sb.append(", keyFilePath='").append(keyFilePath).append('\'');
-        sb.append(", keyCertChainFilePath='").append(keyCertChainFilePath).append('\'');
+        sb.append(", trustCertFilePath='").append(trustCertFilePath).append('\'');
         sb.append('}');
         return sb.toString();
     }

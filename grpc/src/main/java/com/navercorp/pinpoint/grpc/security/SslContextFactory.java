@@ -40,11 +40,39 @@ public final class SslContextFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SslContextFactory.class);
 
+    public static SslContext create(SslClientConfig clientConfig) throws SSLException {
+        Assert.requireNonNull(clientConfig, "clientConfig");
+
+        if (!clientConfig.isEnable()) {
+            throw new IllegalArgumentException("sslConfig is disabled.");
+        }
+
+        SslContextBuilder sslContextBuilder = null;
+        try {
+            sslContextBuilder = SslContextBuilder.forClient();
+
+            String trustCertFilePath = clientConfig.getTrustCertFilePath();
+            InputStream trustCertFileInputStream = ResourceUtils.getFileInputStream(trustCertFilePath);
+            sslContextBuilder.trustManager(trustCertFileInputStream);
+
+            SslProvider sslProvider = getSslProvider(clientConfig.getSslProviderType());
+            SslContext sslContext = createSslContext(sslContextBuilder, sslProvider);
+
+            assertValidCipherSuite(sslContext);
+
+            return sslContext;
+        } catch (SSLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SSLException(e);
+        }
+    }
+
     public static SslContext create(SslServerConfig serverConfig) throws SSLException {
         Assert.requireNonNull(serverConfig, "serverConfig");
 
         if (!serverConfig.isEnable()) {
-            return null;
+            throw new IllegalArgumentException("sslConfig is disabled.");
         }
 
         SslContextBuilder sslContextBuilder = null;
@@ -56,22 +84,9 @@ public final class SslContextFactory {
             InputStream keyFileInputStream = ResourceUtils.getFileInputStream(keyFilePath);
 
             SslProvider sslProvider = getSslProvider(serverConfig.getSslProviderType());
+            SslContext sslContext = createSslContext(sslContextBuilder, sslProvider);
 
-            sslContextBuilder = SslContextBuilder.forServer(keyCertChainFileInputStream, keyFileInputStream);
-            sslContextBuilder.protocols(SecurityConstants.DEFAULT_SUPPORT_PROTOCOLS.toArray(new String[0]));
-            sslContextBuilder.ciphers(SecurityConstants.DEFAULT_SUPPORT_CIPHER_SUITE, SupportedCipherSuiteFilter.INSTANCE);
-
-            SslContextBuilder configure = GrpcSslContexts.configure(sslContextBuilder, sslProvider);
-            SslContext sslContext = configure.build();
-
-            List<String> supportedCipherSuiteList = sslContext.cipherSuites();
-            if (CollectionUtils.isEmpty(supportedCipherSuiteList)) {
-                throw new SSLException("cipherSuites must not be empty");
-            }
-
-            assertValidCipherSuite(supportedCipherSuiteList);
-
-            LOGGER.info("Support cipher list : {} {}", sslContext, supportedCipherSuiteList);
+            assertValidCipherSuite(sslContext);
 
             return sslContext;
         } catch (SSLException e) {
@@ -81,15 +96,7 @@ public final class SslContextFactory {
         }
     }
 
-    private static void assertValidCipherSuite(List<String> supportedCipherSuiteList) throws SSLException {
-        for (String cipherSuite : supportedCipherSuiteList) {
-            if (SecurityConstants.BAD_CIPHER_SUITE_LIST.contains(cipherSuite)) {
-                throw new SSLException(cipherSuite + " is not safe. Please check this url.(https://httpwg.org/specs/rfc7540.html#BadCipherSuites)");
-            }
-        }
-    }
-
-    static SslProvider getSslProvider(String providerType) throws SSLException {
+    private static SslProvider getSslProvider(String providerType) throws SSLException {
         if (StringUtils.isEmpty(providerType)) {
             return SslProvider.OPENSSL;
         }
@@ -103,6 +110,33 @@ public final class SslContextFactory {
         }
 
         throw new SSLException("can't find SslProvider. value:" + providerType);
+    }
+
+    private static SslContext createSslContext(SslContextBuilder sslContextBuilder, SslProvider sslProvider) throws SSLException {
+        sslContextBuilder.sslProvider(sslProvider);
+
+        sslContextBuilder.protocols(SecurityConstants.DEFAULT_SUPPORT_PROTOCOLS.toArray(new String[0]));
+        sslContextBuilder.ciphers(SecurityConstants.DEFAULT_SUPPORT_CIPHER_SUITE, SupportedCipherSuiteFilter.INSTANCE);
+
+        SslContextBuilder configure = GrpcSslContexts.configure(sslContextBuilder, sslProvider);
+        return configure.build();
+    }
+
+    private static void assertValidCipherSuite(SslContext sslContext) throws SSLException {
+        Assert.requireNonNull(sslContext, "sslContext must not be null");
+
+        List<String> supportedCipherSuiteList = sslContext.cipherSuites();
+        if (CollectionUtils.isEmpty(supportedCipherSuiteList)) {
+            throw new SSLException("cipherSuites must not be empty");
+        }
+
+        for (String cipherSuite : supportedCipherSuiteList) {
+            if (SecurityConstants.BAD_CIPHER_SUITE_LIST.contains(cipherSuite)) {
+                throw new SSLException(cipherSuite + " is not safe. Please check this url.(https://httpwg.org/specs/rfc7540.html#BadCipherSuites)");
+            }
+        }
+
+        LOGGER.info("Support cipher list : {} {}", sslContext, supportedCipherSuiteList);
     }
 
 }

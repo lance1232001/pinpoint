@@ -17,6 +17,7 @@
 package com.navercorp.pinpoint.grpc.client;
 
 import com.navercorp.pinpoint.common.util.Assert;
+import com.navercorp.pinpoint.grpc.security.SslClientConfig;
 
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +39,8 @@ public class ClientOption {
     public static final int DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK = 32 * 1024 * 1024;
     public static final int DEFAULT_WRITE_BUFFER_LOW_WATER_MARK = 16 * 1024 * 1024;
 
+    public static final SslClientConfig DEFAULT_SSL_CONFIG = SslClientConfig.DISABLED_CONFIG;
+
     private final long keepAliveTime;
     private final long keepAliveTimeout;
     // KeepAliveManager.keepAliveDuringTransportIdle
@@ -52,7 +55,10 @@ public class ClientOption {
     private final int writeBufferHighWaterMark;
     private final int writeBufferLowWaterMark;
 
-    private ClientOption(long keepAliveTime, long keepAliveTimeout, int maxHeaderListSize, int maxInboundMessageSize, int flowControlWindow, int connectTimeout, int writeBufferHighWaterMark, int writeBufferLowWaterMark) {
+    private final SslClientConfig sslConfig;
+
+    private ClientOption(long keepAliveTime, long keepAliveTimeout, int maxHeaderListSize, int maxInboundMessageSize, int flowControlWindow, int connectTimeout, int writeBufferHighWaterMark,
+                         int writeBufferLowWaterMark, SslClientConfig sslConfig) {
         this.keepAliveTime = keepAliveTime;
         this.keepAliveTimeout = keepAliveTimeout;
         this.flowControlWindow = flowControlWindow;
@@ -61,6 +67,7 @@ public class ClientOption {
         this.connectTimeout = connectTimeout;
         this.writeBufferHighWaterMark = writeBufferHighWaterMark;
         this.writeBufferLowWaterMark = writeBufferLowWaterMark;
+        this.sslConfig = sslConfig;
     }
 
     public int getFlowControlWindow() {
@@ -103,6 +110,10 @@ public class ClientOption {
         return writeBufferLowWaterMark;
     }
 
+    public SslClientConfig getSslConfig() {
+        return sslConfig;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ClientOption{");
@@ -116,6 +127,7 @@ public class ClientOption {
         sb.append(", connectTimeout=").append(connectTimeout);
         sb.append(", writeBufferHighWaterMark=").append(writeBufferHighWaterMark);
         sb.append(", writeBufferLowWaterMark=").append(writeBufferLowWaterMark);
+        sb.append(", sslConfig=").append(sslConfig);
         sb.append('}');
         return sb.toString();
     }
@@ -132,8 +144,11 @@ public class ClientOption {
         private int writeBufferHighWaterMark = DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK;
         private int writeBufferLowWaterMark = DEFAULT_WRITE_BUFFER_LOW_WATER_MARK;
 
+        private SslClientConfig sslConfig = DEFAULT_SSL_CONFIG;
+
         public ClientOption build() {
-            final ClientOption clientOption = new ClientOption(keepAliveTime, keepAliveTimeout, maxHeaderListSize, maxInboundMessageSize, flowControlWindow, connectTimeout, writeBufferHighWaterMark, writeBufferLowWaterMark);
+            final ClientOption clientOption = new ClientOption(keepAliveTime, keepAliveTimeout, maxHeaderListSize, maxInboundMessageSize, flowControlWindow, connectTimeout,
+                    writeBufferHighWaterMark, writeBufferLowWaterMark, sslConfig);
             return clientOption;
         }
 
@@ -177,6 +192,10 @@ public class ClientOption {
             this.writeBufferLowWaterMark = writeBufferLowWaterMark;
         }
 
+        public void setSslConfig(SslClientConfig sslConfig) {
+            this.sslConfig = Assert.requireNonNull(sslConfig, "sslConfig must not be null");
+        }
+
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("Builder{");
@@ -188,8 +207,10 @@ public class ClientOption {
             sb.append(", connectTimeout=").append(connectTimeout);
             sb.append(", writeBufferHighWaterMark=").append(writeBufferHighWaterMark);
             sb.append(", writeBufferLowWaterMark=").append(writeBufferLowWaterMark);
+            sb.append(", sslConfig=").append(sslConfig);
             sb.append('}');
             return sb.toString();
         }
+
     }
 }

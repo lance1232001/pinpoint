@@ -16,6 +16,8 @@
 
 package com.navercorp.pinpoint.grpc.security;
 
+import java.util.Properties;
+
 /**
  * @author Taejin Koo
  */
@@ -29,7 +31,11 @@ enum SslOption {
     //// for server
     KEY_FILE_PATH("ssl.key.file.path", ""),
 
-    KEY_CERT_CHAIN_FILE_PATH("ssl.key.cert.file.path", "");
+    KEY_CERT_CHAIN_FILE_PATH("ssl.key.cert.file.path", ""),
+
+
+    //// client server
+    TRUST_CERT_FILE_PATH("ssl.trust.cert.file.path", "");
 
 
     private final String key;
@@ -46,6 +52,15 @@ enum SslOption {
 
     String getDefaultValue() {
         return defaultValue;
+    }
+
+    boolean readBoolean(Properties properties, String prefix) {
+        String value = properties.getProperty(prefix + getKey(), getDefaultValue());
+        return Boolean.valueOf(value);
+    }
+
+    String readString(Properties properties, String prefix) {
+        return properties.getProperty(prefix + getKey(), getDefaultValue());
     }
 
 }

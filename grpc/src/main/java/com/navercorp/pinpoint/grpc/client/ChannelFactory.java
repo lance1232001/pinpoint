@@ -19,22 +19,27 @@ package com.navercorp.pinpoint.grpc.client;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.common.util.PinpointThreadFactory;
 import com.navercorp.pinpoint.grpc.ExecutorUtils;
+import com.navercorp.pinpoint.grpc.security.SslClientConfig;
+import com.navercorp.pinpoint.grpc.security.SslContextFactory;
 
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.NameResolverProvider;
 import io.grpc.netty.InternalNettyChannelBuilder;
+import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -92,7 +97,7 @@ public class ChannelFactory {
                 workQueue, threadFactory);
     }
 
-    public ManagedChannel build(String channelName, String host, int port) {
+    public ManagedChannel build(String channelName, String host, int port) throws SSLException {
         final NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(host, port);
         channelBuilder.usePlaintext();
         channelBuilder.eventLoopGroup(eventLoopGroup);
@@ -107,6 +112,13 @@ public class ChannelFactory {
             channelBuilder.nameResolverFactory(this.nameResolverProvider);
         }
         setupClientOption(channelBuilder);
+
+        SslClientConfig sslConfig = clientOption.getSslConfig();
+        if (sslConfig != null && sslConfig.isEnable()) {
+            SslContext sslContext = SslContextFactory.create(sslConfig);
+            channelBuilder.sslContext(sslContext);
+            channelBuilder.negotiationType(NegotiationType.TLS);
+        }
 
         final ManagedChannel channel = channelBuilder.build();
 

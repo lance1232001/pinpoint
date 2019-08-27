@@ -31,6 +31,7 @@ import io.grpc.ManagedChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -72,7 +73,11 @@ public abstract class GrpcDataSender implements DataSender<Object> {
         this.executor = newExecutorService(name + "-Executor", executorQueueSize);
 
         this.channelFactory = new ChannelFactory(channelFactoryOption);
-        this.managedChannel = channelFactory.build(name, host, port);
+        try {
+            this.managedChannel = channelFactory.build(name, host, port);
+        } catch (SSLException e) {
+            throw new IllegalArgumentException("Can not be initialize. Caused: " + e.getMessage(), e);
+        }
     }
 
     protected ExecutorService newExecutorService(String name, int senderExecutorQueueSize) {
