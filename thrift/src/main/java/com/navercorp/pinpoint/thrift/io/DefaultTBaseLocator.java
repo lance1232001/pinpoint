@@ -55,6 +55,9 @@ public class DefaultTBaseLocator {
 
     public static final short AGENT_STAT_BATCH = 56;
 
+    // for getHandler
+    public static final short AGENT_REQUESTS_STAT_URL_BATCH = 58;
+
     public static final short SPANCHUNK = 70;
 
     public static final short SPANEVENT = 80;

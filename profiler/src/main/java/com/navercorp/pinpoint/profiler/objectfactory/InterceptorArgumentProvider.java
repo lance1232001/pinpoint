@@ -21,7 +21,9 @@ import com.navercorp.pinpoint.bootstrap.interceptor.annotation.Name;
 import com.navercorp.pinpoint.bootstrap.interceptor.annotation.NoCache;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.InterceptorScope;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProviderRegistry;
 import com.navercorp.pinpoint.bootstrap.plugin.monitor.DataSourceMonitorRegistry;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.RequestStatMonitorFactory;
 import com.navercorp.pinpoint.exception.PinpointException;
 import com.navercorp.pinpoint.profiler.metadata.ApiMetaDataService;
 import com.navercorp.pinpoint.profiler.util.TypeUtils;
@@ -39,12 +41,16 @@ public class InterceptorArgumentProvider implements ArgumentProvider {
     private final InstrumentClass targetClass;
     private final InstrumentMethod targetMethod;
     private final RequestRecorderFactory requestRecorderFactory;
+    private final UrlMappingExtractorParameterValueProviderRegistry urlMappingExtractorParameterValueProviderRegistry;
+    private final RequestStatMonitorFactory requestStatMonitorFactory;
 
-    public InterceptorArgumentProvider(DataSourceMonitorRegistry dataSourceMonitorRegistry, ApiMetaDataService apiMetaDataService, RequestRecorderFactory requestRecorderFactory, InstrumentClass targetClass) {
-        this(dataSourceMonitorRegistry, apiMetaDataService, requestRecorderFactory, null, targetClass, null);
+    public InterceptorArgumentProvider(DataSourceMonitorRegistry dataSourceMonitorRegistry, ApiMetaDataService apiMetaDataService, RequestRecorderFactory requestRecorderFactory,
+                                       UrlMappingExtractorParameterValueProviderRegistry urlMappingExtractorParameterValueProviderRegistry, RequestStatMonitorFactory requestStatMonitorFactory, InstrumentClass targetClass) {
+        this(dataSourceMonitorRegistry, apiMetaDataService, requestRecorderFactory, urlMappingExtractorParameterValueProviderRegistry, requestStatMonitorFactory, null, targetClass, null);
     }
     
-    public InterceptorArgumentProvider(DataSourceMonitorRegistry dataSourceMonitorRegistry, ApiMetaDataService apiMetaDataService, RequestRecorderFactory requestRecorderFactory, InterceptorScope interceptorScope, InstrumentClass targetClass, InstrumentMethod targetMethod) {
+    public InterceptorArgumentProvider(DataSourceMonitorRegistry dataSourceMonitorRegistry, ApiMetaDataService apiMetaDataService, RequestRecorderFactory requestRecorderFactory,
+                                       UrlMappingExtractorParameterValueProviderRegistry urlMappingExtractorParameterValueProviderRegistry, RequestStatMonitorFactory requestStatMonitorFactory, InterceptorScope interceptorScope, InstrumentClass targetClass, InstrumentMethod targetMethod) {
         if (dataSourceMonitorRegistry == null) {
             throw new NullPointerException("dataSourceMonitorRegistry");
         }
@@ -54,6 +60,8 @@ public class InterceptorArgumentProvider implements ArgumentProvider {
         this.dataSourceMonitorRegistry = dataSourceMonitorRegistry;
         this.apiMetaDataService = apiMetaDataService;
         this.requestRecorderFactory = requestRecorderFactory;
+        this.urlMappingExtractorParameterValueProviderRegistry = urlMappingExtractorParameterValueProviderRegistry;
+        this.requestStatMonitorFactory = requestStatMonitorFactory;
         this.interceptorScope = interceptorScope;
         this.targetClass = targetClass;
         this.targetMethod = targetMethod;
@@ -86,6 +94,10 @@ public class InterceptorArgumentProvider implements ArgumentProvider {
             return Option.withValue(dataSourceMonitorRegistry);
         } else if(type == RequestRecorderFactory.class) {
             return Option.withValue(requestRecorderFactory);
+        } else if (type == UrlMappingExtractorParameterValueProviderRegistry.class) {
+            return Option.withValue(urlMappingExtractorParameterValueProviderRegistry);
+        } else if (type == RequestStatMonitorFactory.class) {
+            return Option.withValue(requestStatMonitorFactory);
         }
         
         return Option.empty();

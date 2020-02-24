@@ -20,6 +20,7 @@ import com.navercorp.pinpoint.collector.receiver.DispatchHandler;
 import com.navercorp.pinpoint.grpc.MessageFormatUtils;
 import com.navercorp.pinpoint.grpc.StatusError;
 import com.navercorp.pinpoint.grpc.StatusErrors;
+import com.navercorp.pinpoint.grpc.trace.PAgentRequestsStatBatch;
 import com.navercorp.pinpoint.grpc.trace.PAgentStat;
 import com.navercorp.pinpoint.grpc.trace.PAgentStatBatch;
 import com.navercorp.pinpoint.grpc.trace.PStatMessage;
@@ -68,11 +69,16 @@ public class StatService extends StatGrpc.StatImplBase {
                     logger.debug("Send PAgentStat={}", MessageFormatUtils.debugLog(statMessage));
                 }
 
+                System.out.println("Send PAgentStat=" + MessageFormatUtils.debugLog(statMessage));
                 if (statMessage.hasAgentStat()) {
                     final Message<PAgentStat> message = newMessage(statMessage.getAgentStat(), DefaultTBaseLocator.AGENT_STAT);
                     send(message, responseObserver);
                 } else if (statMessage.hasAgentStatBatch()) {
                     final Message<PAgentStatBatch> message = newMessage(statMessage.getAgentStatBatch(), DefaultTBaseLocator.AGENT_STAT_BATCH);
+                    send(message, responseObserver);
+                } else if (statMessage.hasAgentRequestsStatBatch()) {
+                    System.out.println("hasAgentRequestsStatBatch=" + MessageFormatUtils.debugLog(statMessage));
+                    final Message<PAgentRequestsStatBatch> message = newMessage(statMessage.getAgentRequestsStatBatch(), DefaultTBaseLocator.AGENT_REQUESTS_STAT_URL_BATCH);
                     send(message, responseObserver);
                 } else {
                     if (isDebug) {

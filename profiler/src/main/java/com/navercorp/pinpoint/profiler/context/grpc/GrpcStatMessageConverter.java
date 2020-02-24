@@ -19,6 +19,7 @@ package com.navercorp.pinpoint.profiler.context.grpc;
 import com.google.protobuf.GeneratedMessageV3;
 import com.navercorp.pinpoint.grpc.trace.PActiveTrace;
 import com.navercorp.pinpoint.grpc.trace.PActiveTraceHistogram;
+import com.navercorp.pinpoint.grpc.trace.PAgentRequestsStatBatch;
 import com.navercorp.pinpoint.grpc.trace.PAgentStat;
 import com.navercorp.pinpoint.grpc.trace.PAgentStatBatch;
 import com.navercorp.pinpoint.grpc.trace.PCpuLoad;
@@ -74,6 +75,8 @@ public class GrpcStatMessageConverter implements MessageConverter<GeneratedMessa
             final AgentStatMetricSnapshot agentStatMetricSnapshot = (AgentStatMetricSnapshot) message;
             final PAgentStat agentStat = converAgentStat(agentStatMetricSnapshot);
             return agentStat;
+        } else if (message instanceof PAgentRequestsStatBatch) {
+            return (GeneratedMessageV3) message;
         }
         return null;
     }

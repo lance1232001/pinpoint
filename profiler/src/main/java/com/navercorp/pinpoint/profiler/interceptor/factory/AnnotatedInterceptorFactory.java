@@ -62,7 +62,9 @@ import com.navercorp.pinpoint.bootstrap.interceptor.scope.ScopedInterceptor5;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.ScopedStaticAroundInterceptor;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.InterceptorScope;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProviderRegistry;
 import com.navercorp.pinpoint.bootstrap.plugin.monitor.DataSourceMonitorRegistry;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.RequestStatMonitorFactory;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.profiler.instrument.ScopeInfo;
 import com.navercorp.pinpoint.profiler.metadata.ApiMetaDataService;
@@ -81,6 +83,8 @@ public class AnnotatedInterceptorFactory implements InterceptorFactory {
     private final InstrumentContext pluginContext;
     private final ExceptionHandlerFactory exceptionHandlerFactory;
     private final RequestRecorderFactory requestRecorderFactory;
+    private final UrlMappingExtractorParameterValueProviderRegistry urlMappingExtractorParameterValueProviderRegistry;
+    private final RequestStatMonitorFactory requestStatMonitorFactory;
 
     public AnnotatedInterceptorFactory(ProfilerConfig profilerConfig,
                                        TraceContext traceContext,
@@ -88,7 +92,9 @@ public class AnnotatedInterceptorFactory implements InterceptorFactory {
                                        ApiMetaDataService apiMetaDataService,
                                        InstrumentContext pluginContext,
                                        ExceptionHandlerFactory exceptionHandlerFactory,
-                                       RequestRecorderFactory requestRecorderFactory) {
+                                       RequestRecorderFactory requestRecorderFactory,
+                                       UrlMappingExtractorParameterValueProviderRegistry urlMappingExtractorParameterValueProviderRegistry,
+                                       RequestStatMonitorFactory requestStatMonitorFactory) {
         this.profilerConfig = Assert.requireNonNull(profilerConfig, "profilerConfig");
         this.traceContext = Assert.requireNonNull(traceContext, "traceContext");
         this.dataSourceMonitorRegistry = Assert.requireNonNull(dataSourceMonitorRegistry, "dataSourceMonitorRegistry");
@@ -96,6 +102,8 @@ public class AnnotatedInterceptorFactory implements InterceptorFactory {
         this.pluginContext = Assert.requireNonNull(pluginContext, "pluginContext");
         this.exceptionHandlerFactory = Assert.requireNonNull(exceptionHandlerFactory, "exceptionHandlerFactory");
         this.requestRecorderFactory = Assert.requireNonNull(requestRecorderFactory, "requestRecorderFactory");
+        this.urlMappingExtractorParameterValueProviderRegistry = Assert.requireNonNull(urlMappingExtractorParameterValueProviderRegistry, "urlMappingExtractorParameterValueProviderRegistry");
+        this.requestStatMonitorFactory = Assert.requireNonNull(requestStatMonitorFactory, "requestStatMonitorFactory");
     }
 
     @Override
@@ -104,7 +112,7 @@ public class AnnotatedInterceptorFactory implements InterceptorFactory {
         Assert.requireNonNull(scopeInfo, "scopeInfo");
 
         final InterceptorScope interceptorScope = scopeInfo.getInterceptorScope();
-        InterceptorArgumentProvider interceptorArgumentProvider = new InterceptorArgumentProvider(dataSourceMonitorRegistry, apiMetaDataService, requestRecorderFactory, interceptorScope, target, targetMethod);
+        InterceptorArgumentProvider interceptorArgumentProvider = new InterceptorArgumentProvider(dataSourceMonitorRegistry, apiMetaDataService, requestRecorderFactory, urlMappingExtractorParameterValueProviderRegistry, requestStatMonitorFactory, interceptorScope, target, targetMethod);
 
         AutoBindingObjectFactory factory = new AutoBindingObjectFactory(profilerConfig, traceContext, pluginContext, interceptorClass.getClassLoader());
         Interceptor interceptor = (Interceptor) factory.createInstance(interceptorClass, providedArguments, interceptorArgumentProvider);

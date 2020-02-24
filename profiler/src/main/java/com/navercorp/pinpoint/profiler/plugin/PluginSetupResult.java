@@ -18,6 +18,7 @@ package com.navercorp.pinpoint.profiler.plugin;
 
 import com.navercorp.pinpoint.bootstrap.plugin.ApplicationTypeDetector;
 import com.navercorp.pinpoint.bootstrap.plugin.jdbc.JdbcUrlParserV2;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProvider;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.util.List;
@@ -42,6 +43,10 @@ public class PluginSetupResult {
 
     public List<JdbcUrlParserV2> getJdbcUrlParserList() {
         return this.setupContext.getJdbcUrlParserList();
+    }
+
+    public List<UrlMappingExtractorParameterValueProvider> getUrlMappingExtractorParameterValueProviderList() {
+        return this.setupContext.getUrlMappingExtractorParameterValueProviderList();
     }
 
     public List<ClassFileTransformer> getClassTransformerList() {

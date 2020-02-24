@@ -21,6 +21,7 @@ import com.navercorp.pinpoint.bootstrap.plugin.ApplicationTypeDetector;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginGlobalContext;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginSetupContext;
 import com.navercorp.pinpoint.bootstrap.plugin.jdbc.JdbcUrlParserV2;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProvider;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.util.Assert;
 
@@ -37,6 +38,7 @@ public class DefaultProfilerPluginSetupContext implements ProfilerPluginSetupCon
 
     private final List<ApplicationTypeDetector> serverTypeDetectors = new ArrayList<ApplicationTypeDetector>();
     private final List<JdbcUrlParserV2> jdbcUrlParserList = new ArrayList<JdbcUrlParserV2>();
+    private final List<UrlMappingExtractorParameterValueProvider> urlMappingExtractorParameterValueProviderList = new ArrayList<UrlMappingExtractorParameterValueProvider>();
 
     public DefaultProfilerPluginSetupContext(ProfilerPluginGlobalContext globalContext) {
         this.globalContext = Assert.requireNonNull(globalContext, "globalContext");
@@ -85,8 +87,21 @@ public class DefaultProfilerPluginSetupContext implements ProfilerPluginSetupCon
         this.jdbcUrlParserList.add(jdbcUrlParser);
     }
 
+    @Override
+    public void addUrlMappingExtractor(UrlMappingExtractorParameterValueProvider urlMappingExtractorParameterValueProvider) {
+        if (urlMappingExtractorParameterValueProvider == null) {
+            return;
+        }
+
+        this.urlMappingExtractorParameterValueProviderList.add(urlMappingExtractorParameterValueProvider);
+    }
+
     public List<JdbcUrlParserV2> getJdbcUrlParserList() {
         return jdbcUrlParserList;
+    }
+
+    public List<UrlMappingExtractorParameterValueProvider> getUrlMappingExtractorParameterValueProviderList() {
+        return urlMappingExtractorParameterValueProviderList;
     }
 
 }

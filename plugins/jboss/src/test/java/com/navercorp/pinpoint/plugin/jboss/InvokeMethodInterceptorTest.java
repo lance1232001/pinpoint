@@ -24,6 +24,7 @@ import com.navercorp.pinpoint.bootstrap.config.DefaultProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.config.ProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.context.TraceId;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProviderRegistry;
 import com.navercorp.pinpoint.profiler.context.id.DefaultTraceId;
 import com.navercorp.pinpoint.profiler.context.module.ApplicationContext;
 import com.navercorp.pinpoint.profiler.context.module.DefaultApplicationContext;
@@ -68,6 +69,9 @@ public class InvokeMethodInterceptorTest {
 
     @Mock
     private RequestRecorderFactory requestRecorderFactory;
+
+    @Mock
+    private UrlMappingExtractorParameterValueProviderRegistry urlMappingExtractorParameterValueProviderRegistry;
 
     /**
      * Before.
