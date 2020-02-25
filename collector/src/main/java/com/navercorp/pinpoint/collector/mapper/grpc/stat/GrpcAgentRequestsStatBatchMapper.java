@@ -17,12 +17,17 @@
 package com.navercorp.pinpoint.collector.mapper.grpc.stat;
 
 import com.navercorp.pinpoint.common.server.bo.stat.AgentRequestsStatBo;
-import com.navercorp.pinpoint.common.server.bo.stat.AgentStatBo;
 import com.navercorp.pinpoint.grpc.Header;
+import com.navercorp.pinpoint.grpc.server.ServerContext;
 import com.navercorp.pinpoint.grpc.trace.PAgentRequestsStatBatch;
-import com.navercorp.pinpoint.grpc.trace.PAgentStatBatch;
+import com.navercorp.pinpoint.grpc.trace.PRequestsStatData;
+import com.navercorp.pinpoint.grpc.trace.PRequestsStatUrlMetadata;
 
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Taejin Koo
@@ -30,11 +35,42 @@ import org.springframework.stereotype.Component;
 @Component
 public class GrpcAgentRequestsStatBatchMapper {
 
-    public AgentRequestsStatBo map(final PAgentRequestsStatBatch agentRequestsStatBatch, final Header header) {
+    public AgentRequestsStatBo map(final PAgentRequestsStatBatch agentRequestsStatBatch) {
+        List<PRequestsStatData> requestsStatDataList = agentRequestsStatBatch.getRequestsStatDataList();
+        if (requestsStatDataList.size() == 0) {
+            return null;
+        }
 
+        final Header agentInfo = ServerContext.getAgentInfo();
+        final String agentId = agentInfo.getAgentId();
+        final long startTimestamp = agentInfo.getAgentStartTime();
 
+        Map<Integer, String> metadataUrlMap = new HashMap<>();
 
-        return null;
+        List<PRequestsStatUrlMetadata> requestsStatUrlMetadataList = agentRequestsStatBatch.getRequestsStatUrlMetadataList();
+        for (PRequestsStatUrlMetadata pRequestsStatUrlMetadata : requestsStatUrlMetadataList) {
+            metadataUrlMap.put(pRequestsStatUrlMetadata.getId(), pRequestsStatUrlMetadata.getUrl());
+        }
+
+        AgentRequestsStatBo agentRequestsStatBo = new AgentRequestsStatBo();
+        agentRequestsStatBo.setAgentId(agentId);
+        agentRequestsStatBo.setStartTimestamp(startTimestamp);
+
+        long baseTimeStamp = Long.MAX_VALUE;
+        for (PRequestsStatData pRequestsStatData : requestsStatDataList) {
+            int urlId = pRequestsStatData.getUrlId();
+            String url = metadataUrlMap.get(urlId);
+            agentRequestsStatBo.put(url, pRequestsStatData.getStatus(), pRequestsStatData.getStartTime(), pRequestsStatData.getElapsedTime());
+
+            long endTime = pRequestsStatData.getStartTime() + pRequestsStatData.getElapsedTime();
+            if (baseTimeStamp > endTime) {
+                System.out.println(" current:" + baseTimeStamp + " " + endTime);
+                baseTimeStamp = endTime;
+            }
+        }
+        agentRequestsStatBo.setTimestamp(baseTimeStamp);
+
+        return agentRequestsStatBo;
     }
 
 }

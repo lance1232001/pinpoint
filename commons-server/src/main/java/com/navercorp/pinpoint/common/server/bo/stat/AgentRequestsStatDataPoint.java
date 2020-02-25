@@ -16,11 +16,70 @@
 
 package com.navercorp.pinpoint.common.server.bo.stat;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 /**
  * @author Taejin Koo
  */
 public class AgentRequestsStatDataPoint {
 
+    private final String url;
+    private final Map<Integer, Collection<StartAndElapsedTime>> statusMap = new HashMap<>();
 
+    public AgentRequestsStatDataPoint(String url) {
+        this.url = Objects.requireNonNull(url, "url");
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public boolean addEachRequest(int status, long startTimestamp, long elapsedTime) {
+        Collection<StartAndElapsedTime> startAndElapsedTimeList = statusMap.get(status);
+        if (startAndElapsedTimeList == null) {
+            startAndElapsedTimeList = new ArrayList<>();
+            statusMap.put(status, startAndElapsedTimeList);
+        }
+
+        StartAndElapsedTime startAndElapsedTime = new StartAndElapsedTime(startTimestamp, elapsedTime);
+        startAndElapsedTimeList.add(startAndElapsedTime);
+
+        return true;
+    }
+
+    public Collection<Integer> getStatuses() {
+        if (statusMap.size() == 0) {
+            return Collections.emptyList();
+        } else {
+            return statusMap.keySet();
+        }
+    }
+
+    public Collection<StartAndElapsedTime> getRequestList(int status) {
+        if (!statusMap.containsKey(status)) {
+            return Collections.emptyList();
+        }
+
+        Collection<StartAndElapsedTime> startAndElapsedTimeList = statusMap.get(status);
+        if (startAndElapsedTimeList == null) {
+            return Collections.emptyList();
+        } else {
+            return startAndElapsedTimeList;
+        }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AgentRequestsStatDataPoint{");
+        sb.append("url='").append(url).append('\'');
+        sb.append(", statusMap=").append(statusMap);
+        sb.append('}');
+        return sb.toString();
+    }
 
 }

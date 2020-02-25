@@ -17,9 +17,12 @@
 package com.navercorp.pinpoint.collector.handler.grpc;
 
 import com.navercorp.pinpoint.collector.handler.SimpleHandler;
+import com.navercorp.pinpoint.collector.mapper.grpc.stat.GrpcAgentRequestsStatBatchMapper;
 import com.navercorp.pinpoint.collector.mapper.grpc.stat.GrpcAgentStatBatchMapper;
 import com.navercorp.pinpoint.collector.mapper.grpc.stat.GrpcAgentStatMapper;
+import com.navercorp.pinpoint.collector.service.AgentRequestsStatService;
 import com.navercorp.pinpoint.collector.service.AgentStatService;
+import com.navercorp.pinpoint.common.server.bo.stat.AgentRequestsStatBo;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatBo;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.MessageFormatUtils;
@@ -52,8 +55,14 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
     @Autowired
     private GrpcAgentStatBatchMapper agentStatBatchMapper;
 
+    @Autowired
+    private GrpcAgentRequestsStatBatchMapper agentRequestsStatBatchMapper;
+
     @Autowired(required = false)
     private List<AgentStatService> agentStatServiceList = Collections.emptyList();
+
+    @Autowired
+    private AgentRequestsStatService agentRequestsStatService;
 
     @Override
     public void handleSimple(ServerRequest serverRequest) {
@@ -114,6 +123,10 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
 
         Header header = ServerContext.getAgentInfo();
 
+        AgentRequestsStatBo map = agentRequestsStatBatchMapper.map(agentRequestsStatBatch);
+        System.out.println("===AFTER ==== Handle =" + map);
+
+        agentRequestsStatService.save(map);
 
 //        final AgentStatBo agentStatBo = this.agentStatBatchMapper.map(agentStatBatch, header);
 //        if (agentStatBo == null) {
