@@ -26,6 +26,7 @@ import com.navercorp.pinpoint.common.server.bo.stat.DirectBufferBo;
 import com.navercorp.pinpoint.common.server.bo.stat.FileDescriptorBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcDetailedBo;
+import com.navercorp.pinpoint.common.server.bo.stat.RequestsStatSummaryBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ResponseTimeBo;
 import com.navercorp.pinpoint.common.server.bo.stat.TransactionBo;
 import com.navercorp.pinpoint.web.dao.stat.ActiveTraceDao;
@@ -37,6 +38,7 @@ import com.navercorp.pinpoint.web.dao.stat.DirectBufferDao;
 import com.navercorp.pinpoint.web.dao.stat.FileDescriptorDao;
 import com.navercorp.pinpoint.web.dao.stat.JvmGcDao;
 import com.navercorp.pinpoint.web.dao.stat.JvmGcDetailedDao;
+import com.navercorp.pinpoint.web.dao.stat.RequestsStatSummaryDao;
 import com.navercorp.pinpoint.web.dao.stat.ResponseTimeDao;
 import com.navercorp.pinpoint.web.dao.stat.TransactionDao;
 import org.springframework.beans.factory.FactoryBean;
@@ -294,4 +296,30 @@ abstract class AgentStatDaoFactory<T extends AgentStatDataPoint, D extends Agent
             return true;
         }
     }
+
+    @Repository("requestsStatSummaryDao")
+    public static class RequestsStatSummaryDaoFactory extends AgentStatDaoFactory<RequestsStatSummaryBo, RequestsStatSummaryDao>
+        implements FactoryBean<RequestsStatSummaryDao> {
+
+        @Autowired
+        public void setV2(@Qualifier("requestsStatSummaryDaoV2") RequestsStatSummaryDao v2) {
+            this.v2 = v2;
+        }
+
+        @Override
+        public RequestsStatSummaryDao getObject() throws Exception {
+            return super.getDao();
+        }
+
+        @Override
+        public Class<?> getObjectType() {
+            return RequestsStatSummaryDao.class;
+        }
+
+        @Override
+        public boolean isSingleton() {
+            return true;
+        }
+    }
+
 }

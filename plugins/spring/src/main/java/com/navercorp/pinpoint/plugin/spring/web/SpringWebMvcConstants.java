@@ -16,7 +16,7 @@
 
 package com.navercorp.pinpoint.plugin.spring.web;
 
-import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorType;
+import com.navercorp.pinpoint.common.trace.UrlMappingExtractorType;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.trace.ServiceTypeFactory;
 

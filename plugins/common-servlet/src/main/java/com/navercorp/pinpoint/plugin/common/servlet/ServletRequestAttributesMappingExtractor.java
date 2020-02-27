@@ -17,7 +17,7 @@
 package com.navercorp.pinpoint.plugin.common.servlet;
 
 import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractor;
-import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorType;
+import com.navercorp.pinpoint.common.trace.UrlMappingExtractorType;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.common.util.StringUtils;
 

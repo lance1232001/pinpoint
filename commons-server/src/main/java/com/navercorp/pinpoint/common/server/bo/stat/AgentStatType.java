@@ -36,7 +36,8 @@ public enum AgentStatType {
     DIRECT_BUFFER((byte) 10, "DirectBuffer"),
 
 
-    REQUESTS((byte) 20,"Requests");
+    REQUESTS((byte) 20,"Requests"),
+    REQUESTS_SUMMARY((byte) 21,"RequestsSummary");
 
     public static final int TYPE_CODE_BYTE_LENGTH = 1;
 

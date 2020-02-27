@@ -16,6 +16,7 @@
 
 package com.navercorp.pinpoint.bootstrap.plugin.mapping;
 
+import com.navercorp.pinpoint.common.trace.UrlMappingExtractorType;
 import com.navercorp.pinpoint.common.util.Assert;
 
 import java.util.ArrayList;

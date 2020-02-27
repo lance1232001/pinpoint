@@ -16,12 +16,16 @@
 
 package com.navercorp.pinpoint.common.server.bo.stat;
 
+import com.navercorp.pinpoint.common.util.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author Taejin Koo
@@ -73,6 +77,45 @@ public class AgentRequestsStatDataPoint {
         }
     }
 
+    public Collection<RequestsStatSummaryBo> getAgentRequestsStatSummaryDataList(String agentId, long startTimestamp) {
+        List<RequestsStatSummaryBo> result = new ArrayList<>();
+
+        Set<Map.Entry<Integer, Collection<StartAndElapsedTime>>> entrySet = statusMap.entrySet();
+        for (Map.Entry<Integer, Collection<StartAndElapsedTime>> entry : entrySet) {
+            Integer status = entry.getKey();
+            Collection<StartAndElapsedTime> timeCollection = entry.getValue();
+
+            if (CollectionUtils.isEmpty(timeCollection)) {
+                continue;
+            }
+
+            long totalTime = 0;
+            long maxTime = 0;
+            long fastestEndTime = System.currentTimeMillis();
+            for (StartAndElapsedTime time : timeCollection) {
+                long elapsedTime = time.getElapsedTime();
+                long endTime = time.getStartTime() + elapsedTime;
+                totalTime += elapsedTime;
+                if (elapsedTime > maxTime) {
+                    maxTime = elapsedTime;
+                }
+                if (fastestEndTime > endTime) {
+                    fastestEndTime = endTime;
+                }
+            }
+
+            RequestsStatSummaryBo agentRequestsStatSummaryData = new RequestsStatSummaryBo(url, status, timeCollection.size(), totalTime / timeCollection.size(), maxTime);
+            agentRequestsStatSummaryData.setAgentId(agentId);
+            agentRequestsStatSummaryData.setStartTimestamp(startTimestamp);
+            agentRequestsStatSummaryData.setTimestamp(fastestEndTime);
+
+            result.add(agentRequestsStatSummaryData);
+        }
+
+        return result;
+    }
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AgentRequestsStatDataPoint{");
@@ -81,5 +124,6 @@ public class AgentRequestsStatDataPoint {
         sb.append('}');
         return sb.toString();
     }
+
 
 }

@@ -27,6 +27,7 @@ import com.navercorp.pinpoint.common.server.bo.stat.DirectBufferBo;
 import com.navercorp.pinpoint.common.server.bo.stat.FileDescriptorBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcDetailedBo;
+import com.navercorp.pinpoint.common.server.bo.stat.RequestsStatSummaryBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ResponseTimeBo;
 import com.navercorp.pinpoint.common.server.bo.stat.TransactionBo;
 import com.navercorp.pinpoint.web.service.stat.ActiveTraceChartService;
@@ -47,6 +48,7 @@ import com.navercorp.pinpoint.web.service.stat.JvmGcChartService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcDetailedChartService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcDetailedService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcService;
+import com.navercorp.pinpoint.web.service.stat.RequestsStatSummaryService;
 import com.navercorp.pinpoint.web.service.stat.ResponseTimeChartService;
 import com.navercorp.pinpoint.web.service.stat.ResponseTimeService;
 import com.navercorp.pinpoint.web.service.stat.TransactionChartService;
@@ -246,4 +248,14 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
             super(directBufferService, directBufferChartService);
         }
     }
+
+    @Controller
+    @RequestMapping("/getAgentStat/requestsStatSummary")
+    public static class RequestsStatSummaryController extends AgentStatController<RequestsStatSummaryBo> {
+        @Autowired
+        public RequestsStatSummaryController(RequestsStatSummaryService requestsStatSummaryService, DirectBufferChartService directBufferChartService) {
+            super(requestsStatSummaryService, directBufferChartService);
+        }
+    }
+
 }

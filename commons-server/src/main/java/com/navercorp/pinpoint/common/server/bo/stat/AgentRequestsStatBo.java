@@ -16,9 +16,11 @@
 
 package com.navercorp.pinpoint.common.server.bo.stat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,7 +41,7 @@ public class AgentRequestsStatBo implements AgentStatDataPoint {
             requestsStatDataPointMap.put(url, agentRequestsStatDataPoint);
         }
 
-        agentRequestsStatDataPoint.addEachRequest(status, startTimestamp, elpasedTime);
+        agentRequestsStatDataPoint.addEachRequest(status, startTime, elpasedTime);
     }
 
     public Collection<String> getUrlList() {
@@ -54,6 +56,24 @@ public class AgentRequestsStatBo implements AgentStatDataPoint {
         AgentRequestsStatDataPoint agentRequestsStatDataPoint = requestsStatDataPointMap.get(url);
         return agentRequestsStatDataPoint;
     }
+
+    public Collection<AgentRequestsStatDataPoint> getAgentRequestsStatDataPointList() {
+        Collection<AgentRequestsStatDataPoint> requestsStatDataPointList = requestsStatDataPointMap.values();
+        return requestsStatDataPointList;
+    }
+
+    public Collection<RequestsStatSummaryBo> getAgentRequestsStatSummaryDataList() {
+        List<RequestsStatSummaryBo> result = new ArrayList<>();
+
+        Collection<AgentRequestsStatDataPoint> values = requestsStatDataPointMap.values();
+        for (AgentRequestsStatDataPoint value : values) {
+            result.addAll(value.getAgentRequestsStatSummaryDataList(agentId, startTimestamp));
+        }
+
+        return result;
+    }
+
+
 
     @Override
     public String getAgentId() {

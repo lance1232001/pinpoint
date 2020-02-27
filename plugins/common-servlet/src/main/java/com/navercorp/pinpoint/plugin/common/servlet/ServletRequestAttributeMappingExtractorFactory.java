@@ -20,9 +20,8 @@ import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractor;
 import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProvider;
-import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorType;
+import com.navercorp.pinpoint.common.trace.UrlMappingExtractorType;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;

@@ -16,6 +16,8 @@
 
 package com.navercorp.pinpoint.bootstrap.plugin.mapping;
 
+import com.navercorp.pinpoint.common.trace.UrlMappingExtractorType;
+
 /**
  * @author Taejin Koo
  */
