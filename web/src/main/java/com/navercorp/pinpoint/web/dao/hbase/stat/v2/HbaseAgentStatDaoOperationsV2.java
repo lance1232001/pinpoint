@@ -62,6 +62,11 @@ public class HbaseAgentStatDaoOperationsV2 {
     private TableDescriptor<HbaseColumnFamily.AgentStatStatistics> descriptor;
 
     <T extends AgentStatDataPoint> List<T> getAgentStatList(AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
+        return getAgentStatList(descriptor.getTableName(), agentStatType, mapper, agentId, range);
+    }
+
+
+    <T extends AgentStatDataPoint> List<T> getAgentStatList(TableName agentStatTableName, AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
         if (agentId == null) {
             throw new NullPointerException("agentId");
         }
@@ -71,7 +76,6 @@ public class HbaseAgentStatDaoOperationsV2 {
 
         Scan scan = this.createScan(agentStatType, agentId, range);
 
-        TableName agentStatTableName = descriptor.getTableName();
         List<List<T>> intermediate = hbaseOperations2.findParallel(agentStatTableName, scan, this.operationFactory.getRowKeyDistributor(), mapper, AGENT_STAT_VER2_NUM_PARTITIONS);
         int expectedSize = (int) (range.getRange() / descriptor.getColumnFamily().TIMESPAN_MS);
         List<T> merged = new ArrayList<>(expectedSize);
@@ -82,6 +86,10 @@ public class HbaseAgentStatDaoOperationsV2 {
     }
 
     <T extends AgentStatDataPoint> boolean agentStatExists(AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
+        return agentStatExists(descriptor.getTableName(), agentStatType, mapper, agentId, range);
+    }
+
+    <T extends AgentStatDataPoint> boolean agentStatExists(TableName agentStatTableName, AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
         if (agentId == null) {
             throw new NullPointerException("agentId");
         }
@@ -96,7 +104,6 @@ public class HbaseAgentStatDaoOperationsV2 {
         int resultLimit = 20;
         Scan scan = this.createScan(agentStatType, agentId, range, resultLimit);
 
-        TableName agentStatTableName = descriptor.getTableName();
         List<List<T>> result = hbaseOperations2.findParallel(agentStatTableName, scan, this.operationFactory.getRowKeyDistributor(), resultLimit, mapper, AGENT_STAT_VER2_NUM_PARTITIONS);
         if (result.isEmpty()) {
             return false;

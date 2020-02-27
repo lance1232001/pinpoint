@@ -25,6 +25,8 @@ import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.instrument.DynamicTransformTrigger;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.jdbc.JdbcContext;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProviderRegistry;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.RequestStatMonitorFactory;
 import com.navercorp.pinpoint.bootstrap.sampler.Sampler;
 import com.navercorp.pinpoint.bootstrap.sampler.TraceSampler;
 import com.navercorp.pinpoint.common.trace.ServiceType;
@@ -64,6 +66,8 @@ import com.navercorp.pinpoint.profiler.context.provider.ActiveTraceRepositoryPro
 import com.navercorp.pinpoint.profiler.context.provider.AgentInfoFactoryProvider;
 import com.navercorp.pinpoint.profiler.context.provider.AgentInfoSenderProvider;
 import com.navercorp.pinpoint.profiler.context.provider.AgentInformationProvider;
+import com.navercorp.pinpoint.profiler.context.provider.RequestStatMonitorFactoryProvider;
+import com.navercorp.pinpoint.profiler.context.provider.UrlMappingExtractorParameterValueProviderRegistryProvider;
 import com.navercorp.pinpoint.profiler.context.provider.metadata.ApiMetaDataServiceProvider;
 import com.navercorp.pinpoint.profiler.context.provider.ApplicationServerTypeProvider;
 import com.navercorp.pinpoint.profiler.context.provider.AsyncContextFactoryProvider;
@@ -180,6 +184,10 @@ public class ApplicationContextModule extends AbstractModule {
 
         bind(JdbcContext.class).to(DefaultJdbcContext.class).in(Scopes.SINGLETON);
         bind(JdbcUrlParsingService.class).toProvider(JdbcUrlParsingServiceProvider.class).in(Scopes.SINGLETON);
+
+        bind(UrlMappingExtractorParameterValueProviderRegistry.class).toProvider(UrlMappingExtractorParameterValueProviderRegistryProvider.class).in(Scopes.SINGLETON);
+
+        bind(RequestStatMonitorFactory.class).toProvider(RequestStatMonitorFactoryProvider.class).in(Scopes.SINGLETON);
 
         bind(AgentInformation.class).toProvider(AgentInformationProvider.class).in(Scopes.SINGLETON);
         // ProxyRequestRecorder

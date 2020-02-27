@@ -408,6 +408,36 @@ public class TestAgentStatFactory {
         }
         return directBufferBos;
     }
+
+    public static List<RequestsStatSummaryBo> createRequestsStatSummaryBos(String agentId, long startTimestamp, long initialTimestamp) {
+        final int numValues = RandomUtils.nextInt(1, MAX_NUM_TEST_VALUES);
+        return createRequestsStatSummaryBos(agentId, startTimestamp, initialTimestamp, numValues);
+    }
+
+    public static List<RequestsStatSummaryBo> createRequestsStatSummaryBos(String agentId, long startTimestamp, long initialTimestamp, int numValues) {
+        List<RequestsStatSummaryBo> result = new ArrayList<RequestsStatSummaryBo>(numValues);
+        List<Long> startTimestamps = createStartTimestamps(startTimestamp, numValues);
+        List<Long> timestamps = createTimestamps(initialTimestamp, numValues);
+
+
+        List<Integer> statusValues = TestAgentStatDataPointFactory.INTEGER.createRandomValues(200, 600, numValues);
+        List<Integer> countValues = TestAgentStatDataPointFactory.INTEGER.createRandomValues(10, 300, numValues);
+        List<Long> avgValues = TestAgentStatDataPointFactory.LONG.createRandomValues(200L, 600L, numValues);
+        List<Long> maxValues = TestAgentStatDataPointFactory.LONG.createRandomValues(600L, 100000L, numValues);
+
+        for (int i = 0; i < numValues; i++) {
+            RequestsStatSummaryBo requestsStatSummaryBo =
+                new RequestsStatSummaryBo("url" + i, statusValues.get(i), countValues.get(i), avgValues.get(i), maxValues.get(i));
+            requestsStatSummaryBo.setAgentId(agentId);
+            requestsStatSummaryBo.setStartTimestamp(startTimestamps.get(i));
+            requestsStatSummaryBo.setTimestamp(timestamps.get(i));
+
+            result.add(requestsStatSummaryBo);
+        }
+        return result;
+    }
+
+
     private static List<Long> createStartTimestamps(long startTimestamp, int numValues) {
         return TestAgentStatDataPointFactory.LONG.createConstantValues(startTimestamp, startTimestamp, numValues);
     }

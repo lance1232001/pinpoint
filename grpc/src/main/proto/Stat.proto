@@ -17,6 +17,7 @@ message PStatMessage {
     oneof field {
         PAgentStat agentStat = 1;
         PAgentStatBatch agentStatBatch = 2;
+        PAgentRequestsStatBatch agentRequestsStatBatch = 3;
     }
 }
 
@@ -62,7 +63,7 @@ enum PJvmGcType {
 
 message PAgentStat {
     int64 timestamp = 1;
-    int64 collectInterval =2;
+    int64 collectInterval = 2;
     PJvmGc gc = 3;
     PCpuLoad cpuLoad = 4;
     PTransaction transaction = 5;
@@ -157,4 +158,21 @@ message PDirectBuffer {
     int64 directMemoryUsed = 2;
     int64 mappedCount = 3;
     int64 mappedMemoryUsed = 4;
+}
+
+message PAgentRequestsStatBatch {
+    repeated PRequestsStatUrlMetadata requestsStatUrlMetadata = 1;
+    repeated PRequestsStatData requestsStatData = 2;
+}
+
+message PRequestsStatUrlMetadata {
+    int32 id = 1;
+    string url = 2;
+}
+
+message PRequestsStatData {
+    int32 urlId = 1;
+    int32 status = 2;
+    int64 startTime = 3;
+    int64 elapsedTime = 4;
 }

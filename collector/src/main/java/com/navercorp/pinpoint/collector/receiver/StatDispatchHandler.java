@@ -43,7 +43,7 @@ public class StatDispatchHandler implements DispatchHandler {
         // To change below code to switch table make it a little bit faster.
         // FIXME (2014.08) Legacy - TAgentStats should not be sent over the wire.
         final short type = header.getType();
-        if (type == DefaultTBaseLocator.AGENT_STAT || type == DefaultTBaseLocator.AGENT_STAT_BATCH) {
+        if (type == DefaultTBaseLocator.AGENT_STAT || type == DefaultTBaseLocator.AGENT_STAT_BATCH || type == DefaultTBaseLocator.GRPC_ONLY_STAT) {
             return new SimpleDualHandler(agentStatHandler, agentEventHandler);
         }
 

@@ -63,6 +63,15 @@ public class HbaseColumnFamily {
         }
     }
 
+    public static final AgentRequestsStatStatistics AGENT_REQUESTS_STAT_STATISTICS = new AgentRequestsStatStatistics (HbaseTable.AGENT_REQUESTS_STAT_VER2, Bytes.toBytes("R"));
+    public static class AgentRequestsStatStatistics extends HbaseColumnFamily {
+        public final int TIMESPAN_MS = 5 * 60 * 1000;
+
+        private AgentRequestsStatStatistics(HbaseTable hBaseTable, byte[] columnFamilyName) {
+            super(hBaseTable, columnFamilyName);
+        }
+    }
+
     public static final ApiMetadata API_METADATA_API = new ApiMetadata(HbaseTable.API_METADATA, Bytes.toBytes("Api"));
     public static class ApiMetadata extends HbaseColumnFamily {
         public byte[] QUALIFIER_SIGNATURE = Bytes.toBytes("P_api_signature");

@@ -27,6 +27,8 @@ import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.http.HttpStatusCodeRecorder;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractor;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.RequestsStatMonitor;
 import com.navercorp.pinpoint.bootstrap.plugin.proxy.ProxyHttpHeaderRecorder;
 import com.navercorp.pinpoint.bootstrap.plugin.proxy.ProxyRequestRecorder;
 import com.navercorp.pinpoint.bootstrap.plugin.request.method.ServletSyncMethodDescriptor;
@@ -57,12 +59,20 @@ public class ServletRequestListenerInterceptorHelper<T> {
     private final RequestRecorderFactory<T> requestRecorderFactory;
     private final ProxyRequestRecorder<T> proxyRequestRecorder;
 
+    private final RequestsStatMonitor<T> httpServletRequestRequestsStatMonitor;
+
+
     @Deprecated
     public ServletRequestListenerInterceptorHelper(final ServiceType serviceType, final TraceContext traceContext, RequestAdaptor<T> requestAdaptor, final Filter<String> excludeUrlFilter, ParameterRecorder<T> parameterRecorder) {
         this(serviceType, traceContext, requestAdaptor, excludeUrlFilter, parameterRecorder, null);
     }
 
     public ServletRequestListenerInterceptorHelper(final ServiceType serviceType, final TraceContext traceContext, RequestAdaptor<T> requestAdaptor, final Filter<String> excludeUrlFilter, ParameterRecorder<T> parameterRecorder, RequestRecorderFactory<T> requestRecorderFactory) {
+        this(serviceType, traceContext, requestAdaptor, excludeUrlFilter, parameterRecorder, requestRecorderFactory, null);
+    }
+
+    public ServletRequestListenerInterceptorHelper(final ServiceType serviceType, final TraceContext traceContext, RequestAdaptor<T> requestAdaptor, final Filter<String> excludeUrlFilter, ParameterRecorder<T> parameterRecorder,
+                                                   RequestRecorderFactory<T> requestRecorderFactory, RequestsStatMonitor<T> httpServletRequestRequestsStatMonitor) {
         this.serviceType = Assert.requireNonNull(serviceType, "serviceType");
         this.traceContext = Assert.requireNonNull(traceContext, "traceContext");
         this.requestAdaptor = Assert.requireNonNull(requestAdaptor, "requestAdaptor");
@@ -80,6 +90,7 @@ public class ServletRequestListenerInterceptorHelper<T> {
         this.httpStatusCodeRecorder = new HttpStatusCodeRecorder(traceContext.getProfilerConfig().getHttpStatusCodeErrors());
 
         this.traceContext.cacheApi(SERVLET_SYNC_METHOD_DESCRIPTOR);
+        this.httpServletRequestRequestsStatMonitor = httpServletRequestRequestsStatMonitor;
     }
 
     private <T> Filter<T> defaultFilter(Filter<T> excludeUrlFilter) {
@@ -139,6 +150,8 @@ public class ServletRequestListenerInterceptorHelper<T> {
             logger.debug("Destroyed requestEvent. request={}, throwable={}, statusCode={}", request, throwable, statusCode);
         }
 
+        final String rpcName = requestAdaptor.getRpcName(request);
+
         final Trace trace = this.traceContext.currentRawTraceObject();
         if (trace == null) {
             return;
@@ -148,6 +161,7 @@ public class ServletRequestListenerInterceptorHelper<T> {
         if (!trace.canSampled()) {
             traceContext.removeTraceObject();
             trace.close();
+            httpServletRequestRequestsStatMonitor.store(request, rpcName, statusCode, trace.getStartTime(), System.currentTimeMillis());
             return;
         }
 
@@ -161,6 +175,7 @@ public class ServletRequestListenerInterceptorHelper<T> {
             trace.traceBlockEnd();
             this.traceContext.removeTraceObject();
             trace.close();
+            httpServletRequestRequestsStatMonitor.store(request, rpcName, statusCode, trace.getStartTime(), System.currentTimeMillis());
         }
     }
 }

@@ -16,6 +16,7 @@
 
 package com.navercorp.pinpoint.plugin.spring.web;
 
+import com.navercorp.pinpoint.common.trace.UrlMappingExtractorType;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.trace.ServiceTypeFactory;
 
@@ -27,4 +28,8 @@ public final class SpringWebMvcConstants {
     }
 
     public static final ServiceType SPRING_MVC = ServiceTypeFactory.of(5051, "SPRING_MVC", "SPRING");
+
+    public static final UrlMappingExtractorType SPRING_MVC_URL_MAPPING_EXTRACTOR_TYPE = UrlMappingExtractorType.SERVLET_REQUEST_ATTRIBUTE;
+    public static final String[] SPRING_MVC_URL_MAPPING_ATTRIBUTE_KEYS = {"org.springframework.web.servlet.HandlerMapping.bestMatchingPattern"};
+
 }

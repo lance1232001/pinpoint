@@ -17,16 +17,21 @@
 package com.navercorp.pinpoint.collector.handler.grpc;
 
 import com.navercorp.pinpoint.collector.handler.SimpleHandler;
+import com.navercorp.pinpoint.collector.mapper.grpc.stat.GrpcAgentRequestsStatBatchMapper;
 import com.navercorp.pinpoint.collector.mapper.grpc.stat.GrpcAgentStatBatchMapper;
 import com.navercorp.pinpoint.collector.mapper.grpc.stat.GrpcAgentStatMapper;
+import com.navercorp.pinpoint.collector.service.AgentRequestsStatService;
 import com.navercorp.pinpoint.collector.service.AgentStatService;
+import com.navercorp.pinpoint.common.server.bo.stat.AgentRequestsStatBo;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatBo;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.MessageFormatUtils;
 import com.navercorp.pinpoint.grpc.server.ServerContext;
+import com.navercorp.pinpoint.grpc.trace.PAgentRequestsStatBatch;
 import com.navercorp.pinpoint.grpc.trace.PAgentStat;
 import com.navercorp.pinpoint.grpc.trace.PAgentStatBatch;
 import com.navercorp.pinpoint.io.request.ServerRequest;
+
 import io.grpc.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +55,14 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
     @Autowired
     private GrpcAgentStatBatchMapper agentStatBatchMapper;
 
+    @Autowired
+    private GrpcAgentRequestsStatBatchMapper agentRequestsStatBatchMapper;
+
     @Autowired(required = false)
     private List<AgentStatService> agentStatServiceList = Collections.emptyList();
+
+    @Autowired
+    private AgentRequestsStatService agentRequestsStatService;
 
     @Override
     public void handleSimple(ServerRequest serverRequest) {
@@ -60,6 +71,8 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
             handleAgentStat((PAgentStat) data);
         } else if (data instanceof PAgentStatBatch) {
             handleAgentStatBatch((PAgentStatBatch) data);
+        } else if (data instanceof PAgentRequestsStatBatch) {
+            handleRequestsStatBatch((PAgentRequestsStatBatch) data);
         } else {
             logger.warn("Invalid request type. serverRequest={}", serverRequest);
             throw Status.INTERNAL.withDescription("Bad Request(invalid request type)").asRuntimeException();
@@ -104,4 +117,14 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
             }
         }
     }
+
+    private void handleRequestsStatBatch(PAgentRequestsStatBatch agentRequestsStatBatch) {
+        if (isDebug) {
+            logger.debug("Handle PAgentRequestsStatBatch={}", MessageFormatUtils.debugLog(agentRequestsStatBatch));
+        }
+
+        AgentRequestsStatBo requestsStatBo = agentRequestsStatBatchMapper.map(agentRequestsStatBatch);
+        agentRequestsStatService.save(requestsStatBo);
+    }
+
 }

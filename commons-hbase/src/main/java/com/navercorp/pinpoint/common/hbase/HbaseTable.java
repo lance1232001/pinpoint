@@ -26,6 +26,7 @@ public enum HbaseTable {
     AGENT_EVENT("AgentEvent"),
     AGENT_LIFECYCLE("AgentLifeCycle"),
     AGENT_STAT_VER2("AgentStatV2"),
+    AGENT_REQUESTS_STAT_VER2("AgentRequestsStatV2"),
     API_METADATA("ApiMetaData"),
     APPLICATION_INDEX("ApplicationIndex"),
     APPLICATION_STAT_AGGRE("ApplicationStatAggre"),

@@ -15,10 +15,7 @@
  */
 package com.navercorp.pinpoint.plugin.spring.web;
 
-import static com.navercorp.pinpoint.common.util.VarArgs.va;
-
-import java.security.ProtectionDomain;
-
+import com.navercorp.pinpoint.bootstrap.config.ProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.instrument.InstrumentClass;
 import com.navercorp.pinpoint.bootstrap.instrument.InstrumentException;
 import com.navercorp.pinpoint.bootstrap.instrument.InstrumentMethod;
@@ -27,13 +24,19 @@ import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformCallback
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplate;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplateAware;
 import com.navercorp.pinpoint.bootstrap.interceptor.BasicMethodInterceptor;
+import com.navercorp.pinpoint.bootstrap.logging.PLogger;
+import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPlugin;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginSetupContext;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProvider;
+
+import java.security.ProtectionDomain;
+
+import static com.navercorp.pinpoint.common.util.VarArgs.va;
 
 
 /**
  * @author Jongho Moon
- *
  */
 public class SpringWebMvcPlugin implements ProfilerPlugin, TransformTemplateAware {
 
@@ -43,6 +46,14 @@ public class SpringWebMvcPlugin implements ProfilerPlugin, TransformTemplateAwar
     public void setup(ProfilerPluginSetupContext context) {
         transformTemplate.transform("org.springframework.web.servlet.FrameworkServlet", FrameworkServletTransform.class);
 
+        SpringWebMvcConfig config = new SpringWebMvcConfig(context.getConfig());
+        if (config.isStatEnable()) {
+            UrlMappingExtractorParameterValueProvider urlMappingExtractorParameterValueProvider = new UrlMappingExtractorParameterValueProvider(
+                SpringWebMvcConstants.SPRING_MVC_URL_MAPPING_EXTRACTOR_TYPE,
+                SpringWebMvcConstants.SPRING_MVC_URL_MAPPING_ATTRIBUTE_KEYS);
+
+            context.addUrlMappingExtractor(urlMappingExtractorParameterValueProvider);
+        }
     }
 
     public static class FrameworkServletTransform implements TransformCallback {

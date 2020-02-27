@@ -18,6 +18,7 @@ package com.navercorp.pinpoint.profiler.plugin;
 
 import com.navercorp.pinpoint.bootstrap.plugin.ApplicationTypeDetector;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPlugin;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProvider;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.loader.plugins.profiler.ProfilerPluginLoader;
@@ -78,6 +79,18 @@ public class DefaultPluginContextLoadResult implements PluginContextLoadResult {
         for (PluginSetupResult context : pluginsSetupResult.getPluginSetupResults()) {
             List<JdbcUrlParserV2> jdbcUrlParserList = context.getJdbcUrlParserList();
             result.addAll(jdbcUrlParserList);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<UrlMappingExtractorParameterValueProvider> getUrlMappingExtractorParameterValueProviderList() {
+        final List<UrlMappingExtractorParameterValueProvider> result = new ArrayList<UrlMappingExtractorParameterValueProvider>();
+
+        for (PluginSetupResult context : pluginsSetupResult.getPluginSetupResults()) {
+            List<UrlMappingExtractorParameterValueProvider> parameterValueProviderList = context.getUrlMappingExtractorParameterValueProviderList();
+            result.addAll(parameterValueProviderList);
         }
 
         return result;

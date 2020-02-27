@@ -33,8 +33,11 @@ public enum AgentStatType {
     RESPONSE_TIME((byte) 7, "Response Time"),
     DEADLOCK((byte) 8, "Deadlock"),
     FILE_DESCRIPTOR((byte) 9, "FileDescriptor"),
-    DIRECT_BUFFER((byte) 10, "DirectBuffer");
+    DIRECT_BUFFER((byte) 10, "DirectBuffer"),
 
+
+    REQUESTS((byte) 20,"Requests"),
+    REQUESTS_SUMMARY((byte) 21,"RequestsSummary");
 
     public static final int TYPE_CODE_BYTE_LENGTH = 1;
 

@@ -21,6 +21,9 @@ import com.google.inject.Provider;
 import com.navercorp.pinpoint.bootstrap.config.ProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProvider;
+import com.navercorp.pinpoint.bootstrap.plugin.mapping.UrlMappingExtractorParameterValueProviderRegistry;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.RequestStatMonitorFactory;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.profiler.context.monitor.DataSourceMonitorRegistryService;
 import com.navercorp.pinpoint.profiler.interceptor.factory.ExceptionHandlerFactory;
@@ -38,6 +41,8 @@ public class ObjectBinderFactoryProvider implements Provider<ObjectBinderFactory
     private final Provider<ApiMetaDataService> apiMetaDataServiceProvider;
     private final ExceptionHandlerFactory exceptionHandlerFactory;
     private final RequestRecorderFactory requestRecorderFactory;
+    private final Provider<UrlMappingExtractorParameterValueProviderRegistry> urlMappingExtractorParameterValueProviderProvider;
+    private final Provider<RequestStatMonitorFactory> requestStatMonitorFactoryProvider;
 
     @Inject
     public ObjectBinderFactoryProvider(ProfilerConfig profilerConfig,
@@ -45,18 +50,22 @@ public class ObjectBinderFactoryProvider implements Provider<ObjectBinderFactory
                                        DataSourceMonitorRegistryService dataSourceMonitorRegistryService,
                                        Provider<ApiMetaDataService> apiMetaDataServiceProvider,
                                        ExceptionHandlerFactory exceptionHandlerFactory,
-                                       RequestRecorderFactory requestRecorderFactory) {
+                                       RequestRecorderFactory requestRecorderFactory,
+                                       Provider<UrlMappingExtractorParameterValueProviderRegistry> urlMappingExtractorParameterValueProviderProvider,
+                                       Provider<RequestStatMonitorFactory> requestStatMonitorFactoryProvider) {
         this.profilerConfig = Assert.requireNonNull(profilerConfig, "profilerConfig");
         this.traceContextProvider = Assert.requireNonNull(traceContextProvider, "traceContextProvider");
         this.dataSourceMonitorRegistryService = Assert.requireNonNull(dataSourceMonitorRegistryService, "dataSourceMonitorRegistryService");
         this.apiMetaDataServiceProvider = Assert.requireNonNull(apiMetaDataServiceProvider, "apiMetaDataServiceProvider");
         this.exceptionHandlerFactory = Assert.requireNonNull(exceptionHandlerFactory, "exceptionHandlerFactory");
         this.requestRecorderFactory = Assert.requireNonNull(requestRecorderFactory, "requestRecorderFactory");
+        this.urlMappingExtractorParameterValueProviderProvider = Assert.requireNonNull(urlMappingExtractorParameterValueProviderProvider, "urlMappingExtractorParameterValueProviderProvider");
+        this.requestStatMonitorFactoryProvider = Assert.requireNonNull(requestStatMonitorFactoryProvider, "requestStatMonitorFactoryProvider");
     }
 
     @Override
     public ObjectBinderFactory get() {
-        return new ObjectBinderFactory(profilerConfig, traceContextProvider, dataSourceMonitorRegistryService, apiMetaDataServiceProvider, exceptionHandlerFactory, requestRecorderFactory);
+        return new ObjectBinderFactory(profilerConfig, traceContextProvider, dataSourceMonitorRegistryService, apiMetaDataServiceProvider, exceptionHandlerFactory, requestRecorderFactory, urlMappingExtractorParameterValueProviderProvider, requestStatMonitorFactoryProvider);
     }
 
 }
