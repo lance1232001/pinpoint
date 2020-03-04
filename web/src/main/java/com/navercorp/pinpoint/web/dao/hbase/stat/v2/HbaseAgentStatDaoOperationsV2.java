@@ -113,6 +113,11 @@ public class HbaseAgentStatDaoOperationsV2 {
     }
 
     <S extends SampledAgentStatDataPoint> List<S> getSampledAgentStatList(AgentStatType agentStatType, ResultsExtractor<List<S>> resultExtractor, String agentId, Range range) {
+        TableName agentStatTableName = descriptor.getTableName();
+        return getSampledAgentStatList(agentStatTableName, agentStatType, resultExtractor, agentId, range);
+    }
+
+    <S extends SampledAgentStatDataPoint> List<S> getSampledAgentStatList(TableName agentStatTableName, AgentStatType agentStatType, ResultsExtractor<List<S>> resultExtractor, String agentId, Range range) {
         if (agentId == null) {
             throw new NullPointerException("agentId");
         }
@@ -124,7 +129,6 @@ public class HbaseAgentStatDaoOperationsV2 {
         }
         Scan scan = this.createScan(agentStatType, agentId, range);
 
-        TableName agentStatTableName = descriptor.getTableName();
         return hbaseOperations2.findParallel(agentStatTableName, scan, this.operationFactory.getRowKeyDistributor(), resultExtractor, AGENT_STAT_VER2_NUM_PARTITIONS);
     }
 

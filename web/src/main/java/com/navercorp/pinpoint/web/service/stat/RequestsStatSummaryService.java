@@ -17,20 +17,26 @@
 package com.navercorp.pinpoint.web.service.stat;
 
 import com.navercorp.pinpoint.common.server.bo.stat.RequestsStatSummaryBo;
+import com.navercorp.pinpoint.common.util.CollectionUtils;
+import com.navercorp.pinpoint.rpc.util.ListUtils;
 import com.navercorp.pinpoint.web.dao.stat.RequestsStatSummaryDao;
 import com.navercorp.pinpoint.web.vo.Range;
+import com.navercorp.pinpoint.web.vo.stat.RequestsStatSummaryResponseBo;
+import com.navercorp.pinpoint.web.vo.stat.RequestsStatSummaryResponseBoBuilder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Taejin Koo
  */
 @Service
-public class RequestsStatSummaryService implements AgentStatService<RequestsStatSummaryBo> {
+public class RequestsStatSummaryService implements AgentStatService<RequestsStatSummaryResponseBo> {
 
     private final RequestsStatSummaryDao requestsStatSummaryDao;
 
@@ -40,14 +46,35 @@ public class RequestsStatSummaryService implements AgentStatService<RequestsStat
     }
 
     @Override
-    public List<RequestsStatSummaryBo> selectAgentStatList(String agentId, Range range) {
+    public List<RequestsStatSummaryResponseBo> selectAgentStatList(String agentId, Range range) {
         if (agentId == null) {
             throw new NullPointerException("agentId");
         }
         if (range == null) {
             throw new NullPointerException("range");
         }
-        return this.requestsStatSummaryDao.getAgentStatList(agentId, range);
+        List<RequestsStatSummaryBo> agentStatList = this.requestsStatSummaryDao.getAgentStatList(agentId, range);
+        if (CollectionUtils.isEmpty(agentStatList)) {
+            return null;
+        }
+
+        RequestsStatSummaryBo requestsStatSummaryBo1 = ListUtils.getFirst(agentStatList);
+
+        RequestsStatSummaryResponseBoBuilder requestsStatSummaryResponseBoBuilder = new RequestsStatSummaryResponseBoBuilder();
+        for (RequestsStatSummaryBo requestsStatSummaryBo : agentStatList) {
+            requestsStatSummaryResponseBoBuilder.add(requestsStatSummaryBo.getUrl(), requestsStatSummaryBo.getStatus(), requestsStatSummaryBo.getCount(), requestsStatSummaryBo.getAvgTime(), requestsStatSummaryBo.getMaxTime());
+        }
+
+        RequestsStatSummaryResponseBo requestsStatSummaryResponseBo = requestsStatSummaryResponseBoBuilder.build();
+
+        requestsStatSummaryResponseBo.setAgentId(requestsStatSummaryBo1.getAgentId());
+        requestsStatSummaryResponseBo.setStartTimestamp(requestsStatSummaryBo1.getStartTimestamp());
+        requestsStatSummaryResponseBo.setTimestamp(requestsStatSummaryBo1.getTimestamp());
+
+        ArrayList<RequestsStatSummaryResponseBo> objects = new ArrayList<>();
+        objects.add(requestsStatSummaryResponseBo);
+
+        return objects;
     }
 }
 

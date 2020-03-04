@@ -73,8 +73,6 @@ public class CpuLoadChart implements StatChart {
             return builder.build(sampledActiveTraces, function);
         }
 
-
-
         @Override
         public TimeWindow getTimeWindow() {
             return timeWindow;

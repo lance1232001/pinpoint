@@ -48,6 +48,7 @@ import com.navercorp.pinpoint.web.service.stat.JvmGcChartService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcDetailedChartService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcDetailedService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcService;
+import com.navercorp.pinpoint.web.service.stat.RequestsStatSummaryChartService;
 import com.navercorp.pinpoint.web.service.stat.RequestsStatSummaryService;
 import com.navercorp.pinpoint.web.service.stat.ResponseTimeChartService;
 import com.navercorp.pinpoint.web.service.stat.ResponseTimeService;
@@ -57,6 +58,7 @@ import com.navercorp.pinpoint.web.util.TimeWindow;
 import com.navercorp.pinpoint.web.util.TimeWindowSampler;
 import com.navercorp.pinpoint.web.util.TimeWindowSlotCentricSampler;
 import com.navercorp.pinpoint.web.vo.Range;
+import com.navercorp.pinpoint.web.vo.stat.RequestsStatSummaryResponseBo;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -251,10 +253,10 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
 
     @Controller
     @RequestMapping("/getAgentStat/requestsStatSummary")
-    public static class RequestsStatSummaryController extends AgentStatController<RequestsStatSummaryBo> {
+    public static class RequestsStatSummaryController extends AgentStatController<RequestsStatSummaryResponseBo> {
         @Autowired
-        public RequestsStatSummaryController(RequestsStatSummaryService requestsStatSummaryService, DirectBufferChartService directBufferChartService) {
-            super(requestsStatSummaryService, directBufferChartService);
+        public RequestsStatSummaryController(RequestsStatSummaryService requestsStatSummaryService, RequestsStatSummaryChartService requestsStatSummaryChartService) {
+            super(requestsStatSummaryService, requestsStatSummaryChartService);
         }
     }
 
