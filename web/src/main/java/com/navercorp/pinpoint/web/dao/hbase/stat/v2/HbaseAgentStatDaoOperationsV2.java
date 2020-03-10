@@ -67,6 +67,7 @@ public class HbaseAgentStatDaoOperationsV2 {
 
 
     <T extends AgentStatDataPoint> List<T> getAgentStatList(TableName agentStatTableName, AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
+        // If possible change TableName to TableDescriptor
         if (agentId == null) {
             throw new NullPointerException("agentId");
         }

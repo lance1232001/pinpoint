@@ -54,14 +54,12 @@ public class SampledRequestsStatSummaryResultExtractor implements ResultsExtract
 
     @Override
     public List<SampledRequestsStatSummaryList> extractData(ResultScanner hbaseResults) throws Exception {
-        // divide by dataSource id
-
         List<RequestsStatSummaryBo> decodedList = decode(hbaseResults);
         Map<String, List<RequestsStatSummaryBo>> requestsStatSummaryBoListMap = divideByUrl(decodedList);
 
         List<SampledRequestsStatSummaryList> result = new ArrayList<>();
-        for (List<RequestsStatSummaryBo> value : requestsStatSummaryBoListMap.values()) {
-            List<SampledRequestsStatSummary> sampleData = getSampleData(value);
+        for (List<RequestsStatSummaryBo> requestsStatSummaryBoList : requestsStatSummaryBoListMap.values()) {
+            List<SampledRequestsStatSummary> sampleData = getSampleData(requestsStatSummaryBoList);
 
             SampledRequestsStatSummaryList sampledRequestsStatSummaryList = new SampledRequestsStatSummaryList();
             sampledRequestsStatSummaryList.addAll(sampleData);

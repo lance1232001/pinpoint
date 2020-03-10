@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,7 +57,7 @@ public class RequestsStatSummaryService implements AgentStatService<RequestsStat
             return null;
         }
 
-        RequestsStatSummaryBo requestsStatSummaryBo1 = ListUtils.getFirst(agentStatList);
+        RequestsStatSummaryBo representativeStatSummary = ListUtils.getFirst(agentStatList);
 
         RequestsStatSummaryResponseBoBuilder requestsStatSummaryResponseBoBuilder = new RequestsStatSummaryResponseBoBuilder();
         for (RequestsStatSummaryBo requestsStatSummaryBo : agentStatList) {
@@ -67,9 +66,9 @@ public class RequestsStatSummaryService implements AgentStatService<RequestsStat
 
         RequestsStatSummaryResponseBo requestsStatSummaryResponseBo = requestsStatSummaryResponseBoBuilder.build();
 
-        requestsStatSummaryResponseBo.setAgentId(requestsStatSummaryBo1.getAgentId());
-        requestsStatSummaryResponseBo.setStartTimestamp(requestsStatSummaryBo1.getStartTimestamp());
-        requestsStatSummaryResponseBo.setTimestamp(requestsStatSummaryBo1.getTimestamp());
+        requestsStatSummaryResponseBo.setAgentId(representativeStatSummary.getAgentId());
+        requestsStatSummaryResponseBo.setStartTimestamp(representativeStatSummary.getStartTimestamp());
+        requestsStatSummaryResponseBo.setTimestamp(representativeStatSummary.getTimestamp());
 
         ArrayList<RequestsStatSummaryResponseBo> objects = new ArrayList<>();
         objects.add(requestsStatSummaryResponseBo);

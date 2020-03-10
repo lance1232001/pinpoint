@@ -70,11 +70,10 @@ public class RequestsStatSummaryChartService implements AgentStatChartService {
 
         List<StatChart> result = new ArrayList<>();
 
-        List<SampledRequestsStatSummaryList> sampledAgentStatList = this.sampledRequestsStatSummaryDao.getSampledAgentStatList(agentId, timeWindow);
+        List<SampledRequestsStatSummaryList> sampledRequestsStatSummaryLists = this.sampledRequestsStatSummaryDao.getSampledAgentStatList(agentId, timeWindow);
 
-        for (SampledRequestsStatSummaryList sampledRequestsStatSummaryList : sampledAgentStatList) {
-            List<SampledRequestsStatSummary> list = sampledRequestsStatSummaryList.getSampledRequestsStatSummaryList();
-            if (CollectionUtils.isEmpty(list)) {
+        for (SampledRequestsStatSummaryList sampledRequestsStatSummaryList : sampledRequestsStatSummaryLists) {
+            if (isEmpty(sampledRequestsStatSummaryList)) {
                 continue;
             }
 
@@ -85,15 +84,29 @@ public class RequestsStatSummaryChartService implements AgentStatChartService {
         return result;
     }
 
-    private List<StatChart> create(TimeWindow timeWindow, SampledRequestsStatSummaryList sampledRequestsStatSummaryList) {
-        List<StatChart> result = new ArrayList<>();
+    private boolean isEmpty(SampledRequestsStatSummaryList sampledRequestsStatSummaryList) {
+        if (sampledRequestsStatSummaryList == null) {
+            return true;
+        }
 
-        List<SampledRequestsStatSummary> list = sampledRequestsStatSummaryList.getSampledRequestsStatSummaryList();
-        SampledRequestsStatSummary representativeStatSummary = ListUtils.getFirst(list);
+        if (CollectionUtils.isEmpty(sampledRequestsStatSummaryList.getSampledRequestsStatSummaryList())) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    private List<StatChart> create(TimeWindow timeWindow, SampledRequestsStatSummaryList sampledRequestsStatSummaryList) {
+        SampledRequestsStatSummary representativeStatSummary = getRepresentativeSummary(sampledRequestsStatSummaryList);
+        if (representativeStatSummary == null) {
+            return Collections.emptyList();
+        }
+
         String url = representativeStatSummary.getUrl();
 
+        List<StatChart> result = new ArrayList<>();
         Map<Integer, List<SampledRequestsStatStatusSummary>> statStatusSummaryList = divideByStatus(sampledRequestsStatSummaryList);
-
         for (Map.Entry<Integer, List<SampledRequestsStatStatusSummary>> entry : statStatusSummaryList.entrySet()) {
             StatChart chart = createChart(timeWindow, url, entry.getKey(), entry.getValue());
             result.add(chart);
@@ -102,19 +115,27 @@ public class RequestsStatSummaryChartService implements AgentStatChartService {
         return result;
     }
 
+    private SampledRequestsStatSummary getRepresentativeSummary(SampledRequestsStatSummaryList sampledRequestsStatSummaryList) {
+        if (isEmpty(sampledRequestsStatSummaryList)) {
+            return null;
+        }
+
+        SampledRequestsStatSummary representativeStatSummary = ListUtils.getFirst(sampledRequestsStatSummaryList.getSampledRequestsStatSummaryList());
+        return representativeStatSummary;
+    }
+
 
     private Map<Integer, List<SampledRequestsStatStatusSummary>> divideByStatus(SampledRequestsStatSummaryList sampledRequestsStatSummaryList) {
-        List<SampledRequestsStatSummary> sampledRequestsStatSummaryList1 = sampledRequestsStatSummaryList.getSampledRequestsStatSummaryList();
-        if (CollectionUtils.isEmpty(sampledRequestsStatSummaryList1)) {
+        if (isEmpty(sampledRequestsStatSummaryList)) {
             return Collections.emptyMap();
         }
 
         Map<Integer, List<SampledRequestsStatStatusSummary>> result = new HashMap<>();
 
-        for (SampledRequestsStatSummary sampledRequestsStatSummary : sampledRequestsStatSummaryList1) {
-            Map<Integer, SampledRequestsStatStatusSummary> map = sampledRequestsStatSummary.getMap();
+        for (SampledRequestsStatSummary sampledRequestsStatSummary : sampledRequestsStatSummaryList.getSampledRequestsStatSummaryList()) {
+            Map<Integer, SampledRequestsStatStatusSummary> statStatusSummaryByStatusMap = sampledRequestsStatSummary.getMap();
 
-            for (Map.Entry<Integer, SampledRequestsStatStatusSummary> entry : map.entrySet()) {
+            for (Map.Entry<Integer, SampledRequestsStatStatusSummary> entry : statStatusSummaryByStatusMap.entrySet()) {
                 List<SampledRequestsStatStatusSummary> sampledRequestsStatStatusSummaries = result.get(entry.getKey());
                 if (sampledRequestsStatStatusSummaries == null) {
                     sampledRequestsStatStatusSummaries = new ArrayList<>();

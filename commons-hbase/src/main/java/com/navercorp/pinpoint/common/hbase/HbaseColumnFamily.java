@@ -63,7 +63,7 @@ public class HbaseColumnFamily {
         }
     }
 
-    public static final AgentRequestsStatStatistics AGENT_REQUESTS_STAT_STATISTICS = new AgentRequestsStatStatistics (HbaseTable.AGENT_REQUESTS_STAT_VER2, Bytes.toBytes("R"));
+    public static final AgentRequestsStatStatistics AGENT_REQUESTS_STAT_STATISTICS = new AgentRequestsStatStatistics (HbaseTable.AGENT_REQUESTS_STAT_VER2, Bytes.toBytes("S"));
     public static class AgentRequestsStatStatistics extends HbaseColumnFamily {
         public final int TIMESPAN_MS = 5 * 60 * 1000;
 
