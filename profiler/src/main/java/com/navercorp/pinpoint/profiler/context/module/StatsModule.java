@@ -88,6 +88,5 @@ public class StatsModule extends AbstractModule {
 
         // deadlock
         bind(DeadlockMetric.class).toProvider(DeadlockMetricProvider.class).in(Scopes.SINGLETON);
-
     }
 }
