@@ -18,6 +18,7 @@ package com.navercorp.pinpoint.collector.receiver;
 
 import com.navercorp.pinpoint.collector.handler.SimpleHandler;
 import com.navercorp.pinpoint.collector.handler.SimpleDualHandler;
+import com.navercorp.pinpoint.grpc.trace.PCustomMetricMessage;
 import com.navercorp.pinpoint.io.header.Header;
 import com.navercorp.pinpoint.io.request.ServerRequest;
 import com.navercorp.pinpoint.io.request.ServerResponse;
@@ -39,20 +40,28 @@ public class StatDispatchHandler implements DispatchHandler {
         this.agentEventHandler = agentEventHandler;
     }
 
-    private SimpleHandler getSimpleHandler(Header header) {
+    private SimpleHandler getSimpleHandler(ServerRequest serverRequest) {
         // To change below code to switch table make it a little bit faster.
         // FIXME (2014.08) Legacy - TAgentStats should not be sent over the wire.
+
+        Header header = serverRequest.getHeader();
         final short type = header.getType();
         if (type == DefaultTBaseLocator.AGENT_STAT || type == DefaultTBaseLocator.AGENT_STAT_BATCH) {
             return new SimpleDualHandler(agentStatHandler, agentEventHandler);
+        } else if (type == DefaultTBaseLocator.THIRFT_NOT_SUPPORTED) {
+            Object data = serverRequest.getData();
+            if (data instanceof PCustomMetricMessage) {
+                return agentStatHandler;
+            }
+            throw new UnsupportedOperationException("unsupported objectClazz:" + data.getClass());
+        } else {
+            throw new UnsupportedOperationException("unsupported header:" + header);
         }
-
-        throw new UnsupportedOperationException("unsupported header:" + header);
     }
 
     @Override
     public void dispatchSendMessage(ServerRequest serverRequest) {
-        SimpleHandler simpleHandler = getSimpleHandler(serverRequest.getHeader());
+        SimpleHandler simpleHandler = getSimpleHandler(serverRequest);
         simpleHandler.handleSimple(serverRequest);
     }
 

@@ -81,6 +81,9 @@ public class GrpcStatMessageConverter implements MessageConverter<GeneratedMessa
         } else if (message instanceof AgentCustomMetricSnapshotBatch) {
             final AgentCustomMetricSnapshotBatch agentCustomMetricSnapshotBatch = (AgentCustomMetricSnapshotBatch) message;
             final PCustomMetricMessage pCustomMetricMessage = customMetricMessageConverter.toMessage(agentCustomMetricSnapshotBatch);
+
+            System.out.println("================= " + pCustomMetricMessage);
+
             return pCustomMetricMessage;
         }
         return null;

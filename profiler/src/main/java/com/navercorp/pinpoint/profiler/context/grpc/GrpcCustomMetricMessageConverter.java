@@ -19,17 +19,24 @@ package com.navercorp.pinpoint.profiler.context.grpc;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetric;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetricMessage;
+import com.navercorp.pinpoint.grpc.trace.PDoubleValue;
+import com.navercorp.pinpoint.grpc.trace.PDouleGaugeMetric;
 import com.navercorp.pinpoint.grpc.trace.PIntCountMetric;
+import com.navercorp.pinpoint.grpc.trace.PIntGaugeMetric;
+import com.navercorp.pinpoint.grpc.trace.PIntValue;
+import com.navercorp.pinpoint.grpc.trace.PLongCountMetric;
+import com.navercorp.pinpoint.grpc.trace.PLongGaugeMetric;
+import com.navercorp.pinpoint.grpc.trace.PLongValue;
 import com.navercorp.pinpoint.profiler.context.thrift.MessageConverter;
 import com.navercorp.pinpoint.profiler.monitor.metric.AgentCustomMetricSnapshot;
 import com.navercorp.pinpoint.profiler.monitor.metric.AgentCustomMetricSnapshotBatch;
 import com.navercorp.pinpoint.profiler.monitor.metric.custom.CustomMetricVo;
+import com.navercorp.pinpoint.profiler.monitor.metric.custom.DoubleGaugeMetricVo;
 import com.navercorp.pinpoint.profiler.monitor.metric.custom.IntCountMetricVo;
+import com.navercorp.pinpoint.profiler.monitor.metric.custom.IntGaugeMetricVo;
+import com.navercorp.pinpoint.profiler.monitor.metric.custom.LongCountMetricVo;
+import com.navercorp.pinpoint.profiler.monitor.metric.custom.LongGaugeMetricVo;
 
-import com.google.protobuf.Int32Value;
-import com.google.protobuf.Int32ValueOrBuilder;
-
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,102 +48,211 @@ public class GrpcCustomMetricMessageConverter implements MessageConverter<PCusto
 
     @Override
     public PCustomMetricMessage toMessage(Object message) {
+        Assert.requireNonNull(message, "message");
+
         if (message instanceof AgentCustomMetricSnapshotBatch) {
             AgentCustomMetricSnapshotBatch agentCustomMetricSnapshotBatch = (AgentCustomMetricSnapshotBatch) message;
             List<AgentCustomMetricSnapshot> agentCustomMetricSnapshotList = agentCustomMetricSnapshotBatch.getAgentCustomMetricSnapshotList();
+
 
             Set<String> metricNameSet = new HashSet<String>();
             for (AgentCustomMetricSnapshot agentCustomMetricSnapshot : agentCustomMetricSnapshotList) {
                 metricNameSet.addAll(agentCustomMetricSnapshot.getMetricNameSet());
             }
 
-            for (String metricName : metricNameSet) {
-                
-            }
-            
+            PCustomMetricMessage.Builder builder = PCustomMetricMessage.newBuilder();
             for (int i = 0; i < agentCustomMetricSnapshotList.size(); i++) {
                 AgentCustomMetricSnapshot agentCustomMetricSnapshot = agentCustomMetricSnapshotList.get(i);
 
-//                agentCustomMetricSnapshot.g
-
+                builder.addTimestamp(agentCustomMetricSnapshot.getTimestamp());
+                builder.addCollectInterval(agentCustomMetricSnapshot.getCollectInterval());
             }
 
-            throw new IllegalArgumentException("invalid message type. message=" + message);
+            for (String metricName : metricNameSet) {
+                PCustomMetric pCustomMetric = create(metricName, agentCustomMetricSnapshotList);
+                if (pCustomMetric != null) {
+                    builder.addCustomMetrics(pCustomMetric);
+                }
+            }
+
+            return builder.build();
+        } else {
+            throw new IllegalArgumentException("Not supported Object. clazz:" + message.getClass());
         }
-
-
-        return null;
     }
 
-    private void addMetricValue(String metricName, List<AgentCustomMetricSnapshot> agentCustomMetricSnapshotList, int maxSize) {
-        CustomMetricVo[] customMetricVos = new CustomMetricVo[maxSize];
+    private PCustomMetric create(String metricName, List<AgentCustomMetricSnapshot> agentCustomMetricSnapshotList) {
+        int size = agentCustomMetricSnapshotList.size();
 
-        for (int i = 0; i < agentCustomMetricSnapshotList.size(); i++) {
+        CustomMetricVo representativeCustomMetricVo = null;
+        CustomMetricVo[] customMetricVos = new CustomMetricVo[size];
+        for (int i = 0; i < size; i++) {
             AgentCustomMetricSnapshot agentCustomMetricSnapshot = agentCustomMetricSnapshotList.get(i);
-
             CustomMetricVo customMetricVo = agentCustomMetricSnapshot.get(metricName);
-            // supports to insert null
             customMetricVos[i] = customMetricVo;
+            if (customMetricVo == null) {
+                continue;
+            }
+            if (representativeCustomMetricVo == null) {
+                representativeCustomMetricVo = customMetricVo;
+            }
         }
 
-        create(metricName, customMetricVos);
+        return create0(metricName, representativeCustomMetricVo, customMetricVos);
     }
 
-    private <T extends CustomMetricVo> com.navercorp.pinpoint.grpc.trace.PCustomMetric create(Class<T> clazz, CustomMetricVo[] customMetricVos) {
-        if (clazz == IntCountMetricVo.class) {
-            PIntCountMetric.Builder builder = PIntCountMetric.newBuilder();
-            for (CustomMetricVo customMetricVo : customMetricVos) {
-                if (customMetricVo instanceof IntCountMetricVo) {
-                    builder.addValues(Int32Value.of(((IntCountMetricVo) customMetricVo).getValue()));
-                } else if (customMetricVo == null) {
-                    // null 이 되는지 테스트 필요
-                    builder.addValues(Int32Value.getDefaultInstance());
-                } else {
-                    return null;
-                }
-            }
-            PCustomMetric.Builder builder1 = PCustomMetric.newBuilder();
-            return builder1.setIntCountMetric(builder).build();
+    private PCustomMetric create0(String metricName, CustomMetricVo representativeCustomMetricVo, CustomMetricVo[] customMetricVos) {
+        if (representativeCustomMetricVo instanceof IntCountMetricVo) {
+            return createIntCountMetric(metricName, customMetricVos);
         }
-
-
+        if (representativeCustomMetricVo instanceof LongCountMetricVo) {
+            return createLongCountMetric(metricName, customMetricVos);
+        }
+        if (representativeCustomMetricVo instanceof IntGaugeMetricVo) {
+            return createIntGaugeMetric(metricName, customMetricVos);
+        }
+        if (representativeCustomMetricVo instanceof LongGaugeMetricVo) {
+            return createLongGaugeMetric(metricName, customMetricVos);
+        }
+        if (representativeCustomMetricVo instanceof DoubleGaugeMetricVo) {
+            return createDoubleGaugeMetric(metricName, customMetricVos);
+        }
         return null;
     }
 
+    private PCustomMetric createIntCountMetric(String metricName, CustomMetricVo[] customMetricVos) {
+        PIntCountMetric.Builder intCountMetricBuilder = PIntCountMetric.newBuilder();
+        intCountMetricBuilder.setName(metricName);
 
-    private static class PCustomMetricFactory {
-
-        CustomMetricVo[] customMetricVos;
-
-        public PCustomMetricFactory(CustomMetricVo[] customMetricVos) {
-            this.customMetricVos = Assert.requireNonNull(customMetricVos, "customMetricVos");
-        }
-
-        public com.navercorp.pinpoint.grpc.trace.PCustomMetric create() {
-
-        }
-
-        private boolean checkAllTypeAreSame() {
-            CustomMetricVo firstCustomMetricVo = null;
-            for (CustomMetricVo customMetricVo : customMetricVos) {
-                if (firstCustomMetricVo == null && customMetricVo != null) {
-                    firstCustomMetricVo = customMetricVo;
-                    continue;
-                }
-
-                if (customMetricVo == null) {
-                    continue;
-                }
-
-                if (customMetricVo.getClass() != firstCustomMetricVo.getClass()) {
-                    return false;
-                }
+        int prevValue = 0;
+        for (CustomMetricVo customMetricVo : customMetricVos) {
+            if (customMetricVo instanceof IntCountMetricVo) {
+                int value = ((IntCountMetricVo) customMetricVo).getValue();
+                intCountMetricBuilder.addValues(createIntValue(value - prevValue));
+                prevValue = value;
+            } else {
+                intCountMetricBuilder.addValues(createNotSetIntValue());
             }
-
-
         }
 
+        PCustomMetric.Builder customMetricBuilder = PCustomMetric.newBuilder();
+        customMetricBuilder.setIntCountMetric(intCountMetricBuilder.build());
+
+        return customMetricBuilder.build();
     }
-    
-    
+
+    private PCustomMetric createLongCountMetric(String metricName, CustomMetricVo[] customMetricVos) {
+        PLongCountMetric.Builder longCountMetricBuilder = PLongCountMetric.newBuilder();
+        longCountMetricBuilder.setName(metricName);
+
+        long prevValue = 0;
+        for (CustomMetricVo customMetricVo : customMetricVos) {
+            if (customMetricVo instanceof LongCountMetricVo) {
+                long value = ((LongCountMetricVo) customMetricVo).getValue();
+                longCountMetricBuilder.addValues(createLongValue(value - prevValue));
+                prevValue = value;
+            } else {
+                longCountMetricBuilder.addValues(createNotSetLongValue());
+            }
+        }
+
+        PCustomMetric.Builder customMetricBuilder = PCustomMetric.newBuilder();
+        customMetricBuilder.setLongCountMetric(longCountMetricBuilder.build());
+
+        return customMetricBuilder.build();
+    }
+
+    private PCustomMetric createIntGaugeMetric(String metricName, CustomMetricVo[] customMetricVos) {
+        PIntGaugeMetric.Builder intGaugeMetricBuilder = PIntGaugeMetric.newBuilder();
+        intGaugeMetricBuilder.setName(metricName);
+
+        for (CustomMetricVo customMetricVo : customMetricVos) {
+            if (customMetricVo instanceof IntGaugeMetricVo) {
+                int value = ((IntGaugeMetricVo) customMetricVo).getValue();
+                intGaugeMetricBuilder.addValues(createIntValue(value));
+            } else {
+                intGaugeMetricBuilder.addValues(createNotSetIntValue());
+            }
+        }
+
+        PCustomMetric.Builder customMetricBuilder = PCustomMetric.newBuilder();
+        customMetricBuilder.setIntGaugeMetric(intGaugeMetricBuilder.build());
+
+        return customMetricBuilder.build();
+    }
+
+    private PCustomMetric createLongGaugeMetric(String metricName, CustomMetricVo[] customMetricVos) {
+        PLongGaugeMetric.Builder longGaugeMetricBuilder = PLongGaugeMetric.newBuilder();
+        longGaugeMetricBuilder.setName(metricName);
+
+        for (CustomMetricVo customMetricVo : customMetricVos) {
+            if (customMetricVo instanceof LongGaugeMetricVo) {
+                long value = ((LongGaugeMetricVo) customMetricVo).getValue();
+                longGaugeMetricBuilder.addValues(createLongValue(value));
+            } else {
+                longGaugeMetricBuilder.addValues(createNotSetLongValue());
+            }
+        }
+
+        PCustomMetric.Builder customMetricBuilder = PCustomMetric.newBuilder();
+        customMetricBuilder.setLongGaugeMetric(longGaugeMetricBuilder.build());
+
+        return customMetricBuilder.build();
+    }
+
+    private PCustomMetric createDoubleGaugeMetric(String metricName, CustomMetricVo[] customMetricVos) {
+        PDouleGaugeMetric.Builder doubleGaugeMetricBuilder = PDouleGaugeMetric.newBuilder();
+        doubleGaugeMetricBuilder.setName(metricName);
+
+        for (CustomMetricVo customMetricVo : customMetricVos) {
+            if (customMetricVo instanceof DoubleGaugeMetricVo) {
+                double value = ((DoubleGaugeMetricVo) customMetricVo).getValue();
+                doubleGaugeMetricBuilder.addValues(createDoubleValue(value));
+            } else {
+                doubleGaugeMetricBuilder.addValues(createNotSetDoubleValue());
+            }
+        }
+
+        PCustomMetric.Builder customMetricBuilder = PCustomMetric.newBuilder();
+        customMetricBuilder.setDoubleGaugeMetric(doubleGaugeMetricBuilder.build());
+
+        return customMetricBuilder.build();
+    }
+
+    private PIntValue createIntValue(int value) {
+        PIntValue.Builder builder = PIntValue.newBuilder();
+        builder.setValue(value);
+        return builder.build();
+    }
+
+    private PIntValue createNotSetIntValue() {
+        PIntValue.Builder builder = PIntValue.newBuilder();
+        builder.setIsNotSet(true);
+        return builder.build();
+    }
+
+    private PLongValue createLongValue(long value) {
+        PLongValue.Builder builder = PLongValue.newBuilder();
+        builder.setValue(value);
+        return builder.build();
+    }
+
+    private PLongValue createNotSetLongValue() {
+        PLongValue.Builder builder = PLongValue.newBuilder();
+        builder.setIsNotSet(true);
+        return builder.build();
+    }
+
+    private PDoubleValue createDoubleValue(double value) {
+        PDoubleValue.Builder builder = PDoubleValue.newBuilder();
+        builder.setValue(value);
+        return builder.build();
+    }
+
+    private PDoubleValue createNotSetDoubleValue() {
+        PDoubleValue.Builder builder = PDoubleValue.newBuilder();
+        builder.setIsNotSet(true);
+        return builder.build();
+    }
+
 }
