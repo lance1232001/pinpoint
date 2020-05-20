@@ -123,6 +123,9 @@
     <bean id="statDispatchHandler" class="com.navercorp.pinpoint.collector.receiver.StatDispatchHandler">
         <constructor-arg ref="thriftAgentStatHandlerV2"/>
         <constructor-arg ref="thriftAgentEventHandler"/>
+        <constructor-arg >
+            <null></null>
+        </constructor-arg>
     </bean>
 
     <bean id="statDispatchHandlerFactoryBean" class="com.navercorp.pinpoint.collector.receiver.thrift.DispatchHandlerFactoryBean">

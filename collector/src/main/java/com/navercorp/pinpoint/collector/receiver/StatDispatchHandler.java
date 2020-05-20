@@ -16,8 +16,8 @@
 
 package com.navercorp.pinpoint.collector.receiver;
 
-import com.navercorp.pinpoint.collector.handler.SimpleHandler;
 import com.navercorp.pinpoint.collector.handler.SimpleDualHandler;
+import com.navercorp.pinpoint.collector.handler.SimpleHandler;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetricMessage;
 import com.navercorp.pinpoint.io.header.Header;
 import com.navercorp.pinpoint.io.request.ServerRequest;
@@ -34,10 +34,12 @@ public class StatDispatchHandler implements DispatchHandler {
 
     private final SimpleHandler agentEventHandler;
 
+    private final SimpleHandler agentCustomMetricHandler;
 
-    public StatDispatchHandler(SimpleHandler agentStatHandler, SimpleHandler agentEventHandler) {
+    public StatDispatchHandler(SimpleHandler agentStatHandler, SimpleHandler agentEventHandler, SimpleHandler agentCustomMetricHandler) {
         this.agentStatHandler = agentStatHandler;
         this.agentEventHandler = agentEventHandler;
+        this.agentCustomMetricHandler = agentCustomMetricHandler;
     }
 
     private SimpleHandler getSimpleHandler(ServerRequest serverRequest) {
@@ -48,10 +50,10 @@ public class StatDispatchHandler implements DispatchHandler {
         final short type = header.getType();
         if (type == DefaultTBaseLocator.AGENT_STAT || type == DefaultTBaseLocator.AGENT_STAT_BATCH) {
             return new SimpleDualHandler(agentStatHandler, agentEventHandler);
-        } else if (type == DefaultTBaseLocator.THIRFT_NOT_SUPPORTED) {
+        } else if (type == DefaultTBaseLocator.THIRFT_NOT_SUPPORTED && agentCustomMetricHandler != null) {
             Object data = serverRequest.getData();
             if (data instanceof PCustomMetricMessage) {
-                return agentStatHandler;
+                return agentCustomMetricHandler;
             }
             throw new UnsupportedOperationException("unsupported objectClazz:" + data.getClass());
         } else {

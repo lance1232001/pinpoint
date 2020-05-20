@@ -26,12 +26,11 @@ import com.navercorp.pinpoint.grpc.MessageFormatUtils;
 import com.navercorp.pinpoint.grpc.server.ServerContext;
 import com.navercorp.pinpoint.grpc.trace.PAgentStat;
 import com.navercorp.pinpoint.grpc.trace.PAgentStatBatch;
-import com.navercorp.pinpoint.grpc.trace.PCustomMetricMessage;
 import com.navercorp.pinpoint.io.request.ServerRequest;
+
 import io.grpc.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -68,8 +67,6 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
             handleAgentStat((PAgentStat) data);
         } else if (data instanceof PAgentStatBatch) {
             handleAgentStatBatch((PAgentStatBatch) data);
-        } else if (data instanceof PCustomMetricMessage) {
-            handleAgentCustomMetric((PCustomMetricMessage) data);
         } else {
             logger.warn("Invalid request type. serverRequest={}", serverRequest);
             throw Status.INTERNAL.withDescription("Bad Request(invalid request type)").asRuntimeException();
@@ -114,27 +111,5 @@ public class GrpcAgentStatHandlerV2 implements SimpleHandler {
             }
         }
     }
-
-    private void handleAgentCustomMetric(PCustomMetricMessage customMetricMessage) {
-        if (isDebug) {
-            logger.debug("Handle PAgentStatBatch={}", MessageFormatUtils.debugLog(customMetricMessage));
-        }
-
-        Header header = ServerContext.getAgentInfo();
-
-//        final AgentStatBo agentStatBo = this.agentStatBatchMapper.map(agentStatBatch, header);
-//        if (agentStatBo == null) {
-//            return;
-//        }
-
-//        for (AgentStatService agentStatService : agentStatServiceList) {
-//            try {
-//                agentStatService.save(agentStatBo);
-//            } catch (Exception e) {
-//                logger.warn("Failed to handle service={}, AgentStatBatch={}", agentStatService, MessageFormatUtils.debugLog(agentStatBatch), e);
-//            }
-//        }
-    }
-
 
 }

@@ -24,21 +24,42 @@ import java.util.List;
 /**
  * @author Taejin Koo
  */
-public class CustomMetricBo<T extends Number> {
+public abstract class CustomMetricBo<T extends Number> {
 
     private final String name;
     private final List<T> valueList = new ArrayList<>();
+    private final List<Long> timestampList = new ArrayList<>();
 
     public CustomMetricBo(String name) {
         this.name = Assert.requireNonNull(name, "name");
     }
 
-    public void add(T value) {
+    public void add(T value, long timestamp) {
         valueList.add(value);
+        timestampList.add(timestamp);
     }
 
-    public List<T> getValueList() {
-        return valueList;
+    public T getValue(int index) {
+        return valueList.get(index);
+    }
+
+    public long getTimestamp(int index) {
+        return timestampList.get(index);
+    }
+
+    public int getSize() {
+        return valueList.size();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", valueList=").append(valueList);
+        sb.append(", timestampList=").append(timestampList);
+        sb.append('}');
+        return sb.toString();
     }
 
 }
