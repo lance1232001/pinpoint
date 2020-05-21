@@ -17,19 +17,14 @@
 package com.navercorp.pinpoint.collector.mapper.grpc.metric;
 
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.DoubleGaugeMetricBo;
 import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.IntGaugeMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.LongCountMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.LongGaugeMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
+import com.navercorp.pinpoint.common.server.bo.stat.AgentStatDataPoint;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetric;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetricMessage;
-import com.navercorp.pinpoint.grpc.trace.PDouleGaugeMetric;
 import com.navercorp.pinpoint.grpc.trace.PIntCountMetric;
-import com.navercorp.pinpoint.grpc.trace.PIntGaugeMetric;
-import com.navercorp.pinpoint.grpc.trace.PLongCountMetric;
-import com.navercorp.pinpoint.grpc.trace.PLongGaugeMetric;
+import com.navercorp.pinpoint.grpc.trace.PIntValue;
 
 import org.springframework.stereotype.Component;
 
@@ -42,11 +37,11 @@ import java.util.List;
 public class GrpcAgentCustomMetricMapper {
 
     private final GrpcIntCountMetricMapper intCountMetricMapper = new GrpcIntCountMetricMapper();
-    private final GrpcLongCountMetricMapper longCountMetricMapper = new GrpcLongCountMetricMapper();
-
-    private final GrpcIntGaugeMetricMapper intGaugeMetricMapper = new GrpcIntGaugeMetricMapper();
-    private final GrpcLongGaugeMetricMapper longGaugeMetricMapper = new GrpcLongGaugeMetricMapper();
-    private final GrpcDoubleGaugeMetricMapper doubleGaugeMetricMapper = new GrpcDoubleGaugeMetricMapper();
+//    private final GrpcLongCountMetricMapper longCountMetricMapper = new GrpcLongCountMetricMapper();
+//
+//    private final GrpcIntGaugeMetricMapper intGaugeMetricMapper = new GrpcIntGaugeMetricMapper();
+//    private final GrpcLongGaugeMetricMapper longGaugeMetricMapper = new GrpcLongGaugeMetricMapper();
+//    private final GrpcDoubleGaugeMetricMapper doubleGaugeMetricMapper = new GrpcDoubleGaugeMetricMapper();
 
     public AgentCustomMetricBo map(final PCustomMetricMessage customMetricMessage, final Header header) {
         if (customMetricMessage == null) {
@@ -69,30 +64,30 @@ public class GrpcAgentCustomMetricMapper {
         List<PCustomMetric> customMetricsList = customMetricMessage.getCustomMetricsList();
         for (PCustomMetric pCustomMetric : customMetricsList) {
             if (pCustomMetric.hasIntCountMetric()) {
-                IntCountMetricBo intCountMetricBo = createIntCountMetric(timestampList, pCustomMetric);
+                IntCountMetricListBo intCountMetricBo = createIntCountMetric(pCustomMetric, timestampList, header);
                 if (intCountMetricBo != null) {
                     agentCustomMetricBo.addIntCountMetricBo(intCountMetricBo);
                 }
-            } else if (pCustomMetric.hasLongCountMetric()) {
-                LongCountMetricBo longCountMetricBo = createLongCountMetric(timestampList, pCustomMetric);
-                if (longCountMetricBo != null) {
-                    agentCustomMetricBo.addLongCountMetricBoList(longCountMetricBo);
-                }
-            } else if (pCustomMetric.hasIntGaugeMetric()) {
-                IntGaugeMetricBo intGaugeMetricBo = createIntGaugeMetric(timestampList, pCustomMetric);
-                if (intGaugeMetricBo != null) {
-                    agentCustomMetricBo.addIntGaugeMetricBoList(intGaugeMetricBo);
-                }
-            } else if (pCustomMetric.hasLongGaugeMetric()) {
-                LongGaugeMetricBo longGaugeMetricBo = createLongGaugeMetric(timestampList, pCustomMetric);
-                if (longGaugeMetricBo != null) {
-                    agentCustomMetricBo.addLongGaugeMetricBoList(longGaugeMetricBo);
-                }
-            } else if (pCustomMetric.hasDoubleGaugeMetric()) {
-                DoubleGaugeMetricBo doubleGaugeMetricBo = createDoubleGaugeMetric(timestampList, pCustomMetric);
-                if (doubleGaugeMetricBo != null) {
-                    agentCustomMetricBo.addDoubleGaugeMetricBoList(doubleGaugeMetricBo);
-                }
+//            } else if (pCustomMetric.hasLongCountMetric()) {
+//                LongCountMetricListBo longCountMetricBo = createLongCountMetric(timestampList, pCustomMetric);
+//                if (longCountMetricBo != null) {
+//                    agentCustomMetricBo.addLongCountMetricBoList(longCountMetricBo);
+//                }
+//            } else if (pCustomMetric.hasIntGaugeMetric()) {
+//                IntGaugeMetricListBo intGaugeMetricBo = createIntGaugeMetric(timestampList, pCustomMetric);
+//                if (intGaugeMetricBo != null) {
+//                    agentCustomMetricBo.addIntGaugeMetricBoList(intGaugeMetricBo);
+//                }
+//            } else if (pCustomMetric.hasLongGaugeMetric()) {
+//                LongGaugeMetricListBo longGaugeMetricBo = createLongGaugeMetric(timestampList, pCustomMetric);
+//                if (longGaugeMetricBo != null) {
+//                    agentCustomMetricBo.addLongGaugeMetricBoList(longGaugeMetricBo);
+//                }
+//            } else if (pCustomMetric.hasDoubleGaugeMetric()) {
+//                DoubleGaugeMetricListBo doubleGaugeMetricBo = createDoubleGaugeMetric(timestampList, pCustomMetric);
+//                if (doubleGaugeMetricBo != null) {
+//                    agentCustomMetricBo.addDoubleGaugeMetricBoList(doubleGaugeMetricBo);
+//                }
             } else {
                 continue;
             }
@@ -101,29 +96,85 @@ public class GrpcAgentCustomMetricMapper {
         return agentCustomMetricBo;
     }
 
-    private DoubleGaugeMetricBo createDoubleGaugeMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
-        PDouleGaugeMetric doubleGaugeMetric = pCustomMetric.getDoubleGaugeMetric();
-        return doubleGaugeMetricMapper.map(doubleGaugeMetric, timestampList);
-    }
+//    private DoubleGaugeMetricListBo createDoubleGaugeMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
+//        PDouleGaugeMetric doubleGaugeMetric = pCustomMetric.getDoubleGaugeMetric();
+//        return doubleGaugeMetricMapper.map(doubleGaugeMetric, timestampList);
+//    }
+//
+//    private LongGaugeMetricListBo createLongGaugeMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
+//        PLongGaugeMetric longGaugeMetric = pCustomMetric.getLongGaugeMetric();
+//        return longGaugeMetricMapper.map(longGaugeMetric, timestampList);
+//    }
+//
+//    private IntGaugeMetricListBo createIntGaugeMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
+//        PIntGaugeMetric intGaugeMetric = pCustomMetric.getIntGaugeMetric();
+//        return intGaugeMetricMapper.map(intGaugeMetric, timestampList);
+//    }
+//
+//    private LongCountMetricListBo createLongCountMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
+//        PLongCountMetric longCountMetric = pCustomMetric.getLongCountMetric();
+//        return longCountMetricMapper.map(longCountMetric, timestampList);
+//    }
 
-    private LongGaugeMetricBo createLongGaugeMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
-        PLongGaugeMetric longGaugeMetric = pCustomMetric.getLongGaugeMetric();
-        return longGaugeMetricMapper.map(longGaugeMetric, timestampList);
-    }
 
-    private IntGaugeMetricBo createIntGaugeMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
-        PIntGaugeMetric intGaugeMetric = pCustomMetric.getIntGaugeMetric();
-        return intGaugeMetricMapper.map(intGaugeMetric, timestampList);
-    }
+//        List<PIntValue> intValuesList = pIntCountMetric.getValuesList();
+//        int valueSize = intValuesList.size();
+//        if (valueSize != timestampList.size()) {
+//            return null;
+//        }
+//
+//        String name = pIntCountMetric.getName();
+//        IntCountMetricListBo intCountMetricBo = new IntCountMetricListBo(name);
+//        for (int i = 0; i < valueSize; i++) {
+//            PIntValue intValue = intValuesList.get(i);
+//            Long timestamp = timestampList.get(i);
+//            if (intValue.getIsNotSet()) {
+//                new IntCountMetricBo();
+//                intCountMetricBo.add(null, timestamp);
+//            } else {
+//                intCountMetricBo.add(intValue.getValue(), timestamp);
+//            }
+//        }
+//
+//        return intCountMetricBo;
 
-    private LongCountMetricBo createLongCountMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
-        PLongCountMetric longCountMetric = pCustomMetric.getLongCountMetric();
-        return longCountMetricMapper.map(longCountMetric, timestampList);
-    }
 
-    private IntCountMetricBo createIntCountMetric(List<Long> timestampList, PCustomMetric pCustomMetric) {
+    private IntCountMetricListBo createIntCountMetric(PCustomMetric pCustomMetric, List<Long> timestampList, final Header header) {
         PIntCountMetric intCountMetric = pCustomMetric.getIntCountMetric();
-        return intCountMetricMapper.map(intCountMetric, timestampList);
+
+        List<PIntValue> intValuesList = intCountMetric.getValuesList();
+        int valueSize = intValuesList.size();
+        if (valueSize != timestampList.size()) {
+            return null;
+        }
+
+        IntCountMetricListBo intCountMetricListBo = new IntCountMetricListBo();
+        String metricName = null;
+        for (int i = 0; i < valueSize; i++) {
+            PIntValue pIntValue = intValuesList.get(i);
+            Long timestmap = timestampList.get(i);
+            IntCountMetricBo intCountMetricBo = intCountMetricMapper.map(pIntValue);
+
+            if (metricName == null) {
+                String name = intCountMetricBo.getName();
+                metricName = name;
+            }
+
+            if (intCountMetricBo != null) {
+                setBaseData(intCountMetricBo, header.getAgentId(), header.getAgentStartTime(), timestmap);
+                intCountMetricListBo.add(intCountMetricBo);
+            }
+        }
+        intCountMetricListBo.setName(metricName);
+
+        return intCountMetricListBo;
     }
+
+    private void setBaseData(AgentStatDataPoint agentStatDataPoint, String agentId, long startTimestamp, long timestamp) {
+        agentStatDataPoint.setAgentId(agentId);
+        agentStatDataPoint.setStartTimestamp(startTimestamp);
+        agentStatDataPoint.setTimestamp(timestamp);
+    }
+
 
 }

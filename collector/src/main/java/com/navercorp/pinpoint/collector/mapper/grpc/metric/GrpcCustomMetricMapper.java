@@ -23,6 +23,6 @@ import java.util.List;
  */
 public interface GrpcCustomMetricMapper<P, R> {
 
-    R map(P pCustomMetric, List<Long> timestampList);
+    R map(P pCustomMetric);
 
 }

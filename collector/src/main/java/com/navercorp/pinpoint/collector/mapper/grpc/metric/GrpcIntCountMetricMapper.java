@@ -17,6 +17,7 @@
 package com.navercorp.pinpoint.collector.mapper.grpc.metric;
 
 import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
 import com.navercorp.pinpoint.grpc.trace.PIntCountMetric;
 import com.navercorp.pinpoint.grpc.trace.PIntValue;
 
@@ -25,30 +26,19 @@ import java.util.List;
 /**
  * @author Taejin Koo
  */
-public class GrpcIntCountMetricMapper implements GrpcCustomMetricMapper<PIntCountMetric, IntCountMetricBo> {
+public class GrpcIntCountMetricMapper implements GrpcCustomMetricMapper<PIntValue, IntCountMetricBo> {
 
     @Override
-    public IntCountMetricBo map(PIntCountMetric pIntCountMetric, List<Long> timestampList) {
-        if (pIntCountMetric == null || timestampList == null) {
+    public IntCountMetricBo map(PIntValue pIntValue) {
+        if (pIntValue == null) {
             return null;
         }
 
-        List<PIntValue> intValuesList = pIntCountMetric.getValuesList();
-        int valueSize = intValuesList.size();
-        if (valueSize != timestampList.size()) {
-            return null;
-        }
-
-        String name = pIntCountMetric.getName();
-        IntCountMetricBo intCountMetricBo = new IntCountMetricBo(name);
-        for (int i = 0; i < valueSize; i++) {
-            PIntValue intValue = intValuesList.get(i);
-            Long timestamp = timestampList.get(i);
-            if (intValue.getIsNotSet()) {
-                intCountMetricBo.add(null, timestamp);
-            } else {
-                intCountMetricBo.add(intValue.getValue(), timestamp);
-            }
+        IntCountMetricBo intCountMetricBo = new IntCountMetricBo();
+        if (pIntValue.getIsNotSet()) {
+            intCountMetricBo.setValue(null);
+        } else {
+            intCountMetricBo.setValue(pIntValue.getValue());
         }
 
         return intCountMetricBo;

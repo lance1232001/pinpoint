@@ -16,13 +16,16 @@
 
 package com.navercorp.pinpoint.common.server.bo.metric;
 
+import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
+
 /**
  * @author Taejin Koo
  */
-public class DoubleGaugeMetricBo extends CustomMetricBo<Double> {
+public class IntCountMetricListBo extends CustomMetricListBo<IntCountMetricBo> {
 
-    public DoubleGaugeMetricBo(String name) {
-        super(name);
+    @Override
+    public AgentStatType getAgentStatType() {
+        return AgentStatType.CUSTOM_INT_COUNT;
     }
 
 }
