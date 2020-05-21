@@ -42,6 +42,7 @@ import com.navercorp.pinpoint.profiler.instrument.InstrumentEngine;
 import com.navercorp.pinpoint.profiler.instrument.lambda.LambdaTransformBootloader;
 import com.navercorp.pinpoint.profiler.interceptor.registry.InterceptorRegistryBinder;
 import com.navercorp.pinpoint.profiler.monitor.AgentStatMonitor;
+import com.navercorp.pinpoint.profiler.monitor.CustomMetricMonitor;
 import com.navercorp.pinpoint.profiler.monitor.DeadlockMonitor;
 import com.navercorp.pinpoint.profiler.sender.DataSender;
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ public class DefaultApplicationContext implements ApplicationContext {
     private final DeadlockMonitor deadlockMonitor;
     private final AgentInfoSender agentInfoSender;
     private final AgentStatMonitor agentStatMonitor;
+    private final CustomMetricMonitor customMetricMonitor;
 
     private final TraceContext traceContext;
 
@@ -128,6 +130,7 @@ public class DefaultApplicationContext implements ApplicationContext {
         this.deadlockMonitor = injector.getInstance(DeadlockMonitor.class);
         this.agentInfoSender = injector.getInstance(AgentInfoSender.class);
         this.agentStatMonitor = injector.getInstance(AgentStatMonitor.class);
+        this.customMetricMonitor = injector.getInstance(CustomMetricMonitor.class);
     }
 
     private void lambdaFactorySetup(Instrumentation instrumentation, ClassFileTransformModuleAdaptor classFileTransformer, JavaModuleFactory javaModuleFactory) {
@@ -214,6 +217,7 @@ public class DefaultApplicationContext implements ApplicationContext {
 
         this.deadlockMonitor.start();
         this.agentInfoSender.start();
+        this.customMetricMonitor.start();
         this.agentStatMonitor.start();
     }
 
@@ -221,6 +225,7 @@ public class DefaultApplicationContext implements ApplicationContext {
     public void close() {
         this.agentInfoSender.stop();
         this.agentStatMonitor.stop();
+        this.customMetricMonitor.stop();
         this.deadlockMonitor.stop();
 
         // Need to process stop

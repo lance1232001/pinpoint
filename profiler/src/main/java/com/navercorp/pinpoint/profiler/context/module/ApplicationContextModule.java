@@ -60,6 +60,7 @@ import com.navercorp.pinpoint.profiler.context.method.PredefinedMethodDescriptor
 import com.navercorp.pinpoint.profiler.context.monitor.DataSourceMonitorRegistryService;
 import com.navercorp.pinpoint.profiler.context.monitor.DefaultJdbcContext;
 import com.navercorp.pinpoint.profiler.context.monitor.JdbcUrlParsingService;
+import com.navercorp.pinpoint.profiler.context.monitor.metric.CustomMetricRegistryService;
 import com.navercorp.pinpoint.profiler.context.provider.ActiveTraceRepositoryProvider;
 import com.navercorp.pinpoint.profiler.context.provider.AgentInfoFactoryProvider;
 import com.navercorp.pinpoint.profiler.context.provider.AgentInfoSenderProvider;
@@ -90,6 +91,8 @@ import com.navercorp.pinpoint.profiler.context.provider.metadata.SimpleCacheFact
 import com.navercorp.pinpoint.profiler.context.provider.metadata.SimpleCacheFactoryProvider;
 import com.navercorp.pinpoint.profiler.context.provider.metadata.SqlMetadataServiceProvider;
 import com.navercorp.pinpoint.profiler.context.provider.metadata.StringMetadataServiceProvider;
+import com.navercorp.pinpoint.profiler.context.provider.metric.CustomMetricMonitorProvider;
+import com.navercorp.pinpoint.profiler.context.provider.metric.CustomMetricRegistryServiceProvider;
 import com.navercorp.pinpoint.profiler.context.provider.plugin.PluginClassLoaderProvider;
 import com.navercorp.pinpoint.profiler.context.provider.plugin.PluginSetupProvider;
 import com.navercorp.pinpoint.profiler.context.provider.plugin.ProfilerPluginContextLoaderProvider;
@@ -107,6 +110,7 @@ import com.navercorp.pinpoint.profiler.metadata.ApiMetaDataService;
 import com.navercorp.pinpoint.profiler.metadata.SqlMetaDataService;
 import com.navercorp.pinpoint.profiler.metadata.StringMetaDataService;
 import com.navercorp.pinpoint.profiler.monitor.AgentStatMonitor;
+import com.navercorp.pinpoint.profiler.monitor.CustomMetricMonitor;
 import com.navercorp.pinpoint.profiler.monitor.DeadlockMonitor;
 import com.navercorp.pinpoint.profiler.monitor.DeadlockThreadRegistry;
 import com.navercorp.pinpoint.profiler.monitor.DefaultAgentStatMonitor;
@@ -150,6 +154,7 @@ public class ApplicationContextModule extends AbstractModule {
         bindServiceComponent();
 
         bind(DataSourceMonitorRegistryService.class).toProvider(DataSourceMonitorRegistryServiceProvider.class).in(Scopes.SINGLETON);
+        bind(CustomMetricRegistryService.class).toProvider(CustomMetricRegistryServiceProvider.class).in(Scopes.SINGLETON);
 
         bind(IdGenerator.class).to(AtomicIdGenerator.class).in(Scopes.SINGLETON);
         bind(AsyncIdGenerator.class).to(DefaultAsyncIdGenerator.class).in(Scopes.SINGLETON);
@@ -198,6 +203,8 @@ public class ApplicationContextModule extends AbstractModule {
         bind(DeadlockMonitor.class).toProvider(DeadlockMonitorProvider.class).in(Scopes.SINGLETON);
         bind(AgentInfoSender.class).toProvider(AgentInfoSenderProvider.class).in(Scopes.SINGLETON);
         bind(AgentStatMonitor.class).to(DefaultAgentStatMonitor.class).in(Scopes.SINGLETON);
+
+        bind(CustomMetricMonitor.class).toProvider(CustomMetricMonitorProvider.class).in(Scopes.SINGLETON);
     }
 
     private void bindTraceComponent() {
