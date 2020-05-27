@@ -18,6 +18,7 @@ package com.navercorp.pinpoint.web.controller;
 
 
 
+import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ActiveTraceBo;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatDataPoint;
 import com.navercorp.pinpoint.common.server.bo.stat.CpuLoadBo;
@@ -29,6 +30,8 @@ import com.navercorp.pinpoint.common.server.bo.stat.JvmGcBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcDetailedBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ResponseTimeBo;
 import com.navercorp.pinpoint.common.server.bo.stat.TransactionBo;
+import com.navercorp.pinpoint.web.service.metric.IntCountMetricChartService;
+import com.navercorp.pinpoint.web.service.metric.IntCountMetricService;
 import com.navercorp.pinpoint.web.service.stat.ActiveTraceChartService;
 import com.navercorp.pinpoint.web.service.stat.ActiveTraceService;
 import com.navercorp.pinpoint.web.service.stat.AgentStatChartService;
@@ -246,4 +249,14 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
             super(directBufferService, directBufferChartService);
         }
     }
+
+    @Controller
+    @RequestMapping("/getAgentCustomMetric/intCount")
+    public static class IntCountMetricController extends AgentStatController<IntCountMetricListBo> {
+        @Autowired
+        public IntCountMetricController(IntCountMetricService intCountMetricService, IntCountMetricChartService intCountMetricChartService) {
+            super(intCountMetricService, intCountMetricChartService);
+        }
+    }
+
 }

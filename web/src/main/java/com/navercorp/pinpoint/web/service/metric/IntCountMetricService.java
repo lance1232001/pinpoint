@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 NAVER Corp.
+ * Copyright 2020 NAVER Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package com.navercorp.pinpoint.web.service.stat;
+package com.navercorp.pinpoint.web.service.metric;
 
-import com.navercorp.pinpoint.common.server.bo.stat.DataSourceListBo;
-import com.navercorp.pinpoint.web.dao.stat.DataSourceDao;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
+import com.navercorp.pinpoint.web.dao.metric.IntCountMetricDao;
 import com.navercorp.pinpoint.web.vo.Range;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,20 +31,20 @@ import java.util.Objects;
  * @author Taejin Koo
  */
 @Service
-public class DataSourceService implements AgentStatService<DataSourceListBo> {
+public class IntCountMetricService implements AgentCustomMetricService<IntCountMetricListBo> {
 
-    private final DataSourceDao dataSourceDao;
+    private final IntCountMetricDao intCountMetricDao;
 
-    public DataSourceService(@Qualifier("dataSourceDaoFactory") DataSourceDao dataSourceDao) {
-        this.dataSourceDao = Objects.requireNonNull(dataSourceDao, "dataSourceDao");
+    public IntCountMetricService(@Qualifier("intCountMetricDao") IntCountMetricDao intCountMetricDao) {
+        this.intCountMetricDao = intCountMetricDao;
     }
 
     @Override
-    public List<DataSourceListBo> selectAgentStatList(String agentId, Range range) {
+    public List<IntCountMetricListBo> selectAgentStatList(String agentId, Range range) {
         Objects.requireNonNull(agentId, "agentId");
         Objects.requireNonNull(range, "range");
 
-        return this.dataSourceDao.getAgentStatList(agentId, range);
+        return intCountMetricDao.getAgentStatList(agentId, range);
     }
 
 }
