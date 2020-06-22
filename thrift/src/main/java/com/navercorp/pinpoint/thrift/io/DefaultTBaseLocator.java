@@ -69,6 +69,8 @@ public class DefaultTBaseLocator {
 
     public static final short CHUNK = 400;
 
+    public static final short THIRFT_NOT_SUPPORTED = -1;
+
     private static final TypeLocator<TBase<?, ?>> typeLocator = build();
 
     public static TypeLocator<TBase<?, ?>>build() {
@@ -163,6 +165,13 @@ public class DefaultTBaseLocator {
         });
 
         builder.addBodyFactory(CHUNK, new BodyFactory<TBase<?, ?>>() {
+            @Override
+            public TBase<?, ?> getObject() {
+                return null;
+            }
+        });
+
+        builder.addBodyFactory(THIRFT_NOT_SUPPORTED, new BodyFactory<TBase<?, ?>>() {
             @Override
             public TBase<?, ?> getObject() {
                 return null;
