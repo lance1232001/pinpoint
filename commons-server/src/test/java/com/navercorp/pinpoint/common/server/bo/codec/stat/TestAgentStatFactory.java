@@ -17,6 +17,8 @@
 package com.navercorp.pinpoint.common.server.bo.codec.stat;
 
 import com.navercorp.pinpoint.common.server.bo.JvmGcType;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
 import com.navercorp.pinpoint.common.server.bo.stat.*;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import org.apache.commons.lang3.RandomUtils;
@@ -408,6 +410,58 @@ public class TestAgentStatFactory {
         }
         return directBufferBos;
     }
+
+    public static List<IntCountMetricListBo> createIntCountMetricListBos(String agentId, long startTimestamp, long initialTimestamp) {
+        final int numValues = RandomUtils.nextInt(1, MAX_NUM_TEST_VALUES);
+        return createIntCountMetricListBos(agentId, startTimestamp, initialTimestamp, numValues);
+    }
+
+    public static List<IntCountMetricListBo> createIntCountMetricListBos(String agentId, long startTimestamp, long initialTimestamp, int numValues) {
+        List<IntCountMetricListBo> intCountMetricListBos = new ArrayList<IntCountMetricListBo>(numValues);
+
+        for (int i = 0; i < numValues; i++) {
+            int value = RandomUtils.nextInt(0, 1000);
+            int intCountMetricBoSize = RandomUtils.nextInt(1, MAX_NUM_TEST_VALUES);
+
+            String metricName = "groupName/metricName/labelName" + i;
+
+            IntCountMetricListBo intCountMetricListBo = createIntCountMetricListBo(agentId, startTimestamp, initialTimestamp, metricName, value, intCountMetricBoSize);
+            intCountMetricListBos.add(intCountMetricListBo);
+        }
+        return intCountMetricListBos;
+    }
+
+    private static IntCountMetricListBo createIntCountMetricListBo(String agentId, long startTimestamp, long initialTimestamp, String metricName, int intValueCount, int numValues) {
+        IntCountMetricListBo intCountMetricListBo = new IntCountMetricListBo();
+        intCountMetricListBo.setAgentId(agentId);
+        intCountMetricListBo.setStartTimestamp(startTimestamp);
+        intCountMetricListBo.setTimestamp(initialTimestamp);
+        intCountMetricListBo.setName(metricName);
+
+        List<Long> startTimestamps = createStartTimestamps(startTimestamp, numValues);
+
+        System.out.println("~~ " + startTimestamps);
+
+
+        List<Long> timestamps = createTimestamps(initialTimestamp, numValues);
+
+        System.out.println("@@ " + timestamps);
+
+
+        for (int i = 0; i < numValues; i++) {
+            IntCountMetricBo intCountMetricBo = new IntCountMetricBo();
+            intCountMetricBo.setAgentId(agentId);
+            intCountMetricBo.setStartTimestamp(startTimestamps.get(i));
+            intCountMetricBo.setTimestamp(timestamps.get(i));
+
+            intCountMetricBo.setValue(intValueCount);
+
+            intCountMetricListBo.add(intCountMetricBo);
+        }
+
+        return intCountMetricListBo;
+    }
+
     private static List<Long> createStartTimestamps(long startTimestamp, int numValues) {
         return TestAgentStatDataPointFactory.LONG.createConstantValues(startTimestamp, startTimestamp, numValues);
     }

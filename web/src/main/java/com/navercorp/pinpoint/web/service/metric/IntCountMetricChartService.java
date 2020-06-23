@@ -16,14 +16,20 @@
 
 package com.navercorp.pinpoint.web.service.metric;
 
+import com.navercorp.pinpoint.common.util.CollectionUtils;
+import com.navercorp.pinpoint.rpc.util.ListUtils;
+import com.navercorp.pinpoint.web.dao.metric.SampledIntCountMetricDao;
 import com.navercorp.pinpoint.web.util.TimeWindow;
+import com.navercorp.pinpoint.web.vo.metric.SampledIntCountMetricList;
+import com.navercorp.pinpoint.web.vo.metric.chart.agent.IntCountMetricChart;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
-import com.navercorp.pinpoint.web.vo.stat.chart.agent.ResponseTimeChart;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Taejin Koo
@@ -31,20 +37,38 @@ import java.util.List;
 @Service
 public class IntCountMetricChartService implements AgentCustomMetricChartService {
 
+    private final SampledIntCountMetricDao sampledIntCountMetricDao;
+
+    public IntCountMetricChartService(@Qualifier("sampledIntCountMetricDao ") SampledIntCountMetricDao sampledIntCountMetricDao) {
+        this.sampledIntCountMetricDao = sampledIntCountMetricDao;
+    }
+
     @Override
     public StatChart selectAgentChart(String agentId, TimeWindow timeWindow) {
+        Objects.requireNonNull(agentId, "agentId");
+        Objects.requireNonNull(timeWindow, "timeWindow");
 
-        System.out.println("~~~~~~");
-
-        return new ResponseTimeChart(timeWindow, Collections.emptyList());
+        List<SampledIntCountMetricList> sampledIntCountMetricLists = this.sampledIntCountMetricDao.getSampledAgentStatList(agentId, timeWindow);
+        if (CollectionUtils.isEmpty(sampledIntCountMetricLists)) {
+            return null;
+        } else {
+            return new IntCountMetricChart(timeWindow, ListUtils.getFirst(sampledIntCountMetricLists));
+        }
     }
 
     @Override
     public List<StatChart> selectAgentChartList(String agentId, TimeWindow timeWindow) {
+        Objects.requireNonNull(agentId, "agentId");
+        Objects.requireNonNull(timeWindow, "timeWindow");
 
-        System.out.println("~~~~~~22222222222222222");
+        List<SampledIntCountMetricList> sampledIntCountMetricLists = sampledIntCountMetricDao.getSampledAgentStatList(agentId, timeWindow);
 
-        return Collections.emptyList();
+        List<StatChart> result = new ArrayList<>(sampledIntCountMetricLists.size());
+        for (SampledIntCountMetricList sampledIntCountMetricList : sampledIntCountMetricLists) {
+            result.add(new IntCountMetricChart(timeWindow, sampledIntCountMetricList));
+        }
+
+        return result;
     }
 
 }

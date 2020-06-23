@@ -56,7 +56,8 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
 
     private final ServletRequestListenerInterceptorHelper<HttpServletRequest> servletRequestListenerInterceptorHelper;
 
-    private final RequestCountMetric intCountMetric;
+    private final RequestCountMetric intCountMetric1;
+    private final RequestCountMetric intCountMetric2;
 
     public StandardHostValveInvokeInterceptor(TraceContext traceContext, MethodDescriptor descriptor, RequestRecorderFactory<HttpServletRequest> requestRecorderFactory, CustomMetricRegistry customMetricMonitorRegistry) {
         this.methodDescriptor = descriptor;
@@ -67,8 +68,11 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
         ParameterRecorder<HttpServletRequest> parameterRecorder = ParameterRecorderFactory.newParameterRecorderFactory(config.getExcludeProfileMethodFilter(), config.isTraceRequestParam());
         this.servletRequestListenerInterceptorHelper = new ServletRequestListenerInterceptorHelper<HttpServletRequest>(TomcatConstants.TOMCAT, traceContext, requestAdaptor, config.getExcludeUrlFilter(), parameterRecorder, requestRecorderFactory);
 
-        intCountMetric = new RequestCountMetric();
-        boolean register = customMetricMonitorRegistry.register(intCountMetric);
+        intCountMetric1 = new RequestCountMetric("tomcat34/request/count");
+        boolean register = customMetricMonitorRegistry.register(intCountMetric1);
+
+        intCountMetric2 = new RequestCountMetric("tomcat45/request/count");
+        register = customMetricMonitorRegistry.register(intCountMetric2);
 
         if (register) {
             logger.warn("Register success");
@@ -77,6 +81,12 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
     }
 
     private static class RequestCountMetric implements IntCountMetric {
+
+        private final String name;
+
+        public RequestCountMetric(String name) {
+            this.name = name;
+        }
 
         private final AtomicInteger requestCount = new AtomicInteger();
 
@@ -92,7 +102,7 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
 
         @Override
         public String getName() {
-            return "tomcat/request/count";
+            return name;
         }
     }
 
@@ -103,7 +113,8 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
             logger.beforeInterceptor(target, args);
         }
 
-        intCountMetric.request();
+        intCountMetric1.request();
+        intCountMetric2.request();
 
         if (!argumentValidator.validate(args)) {
             return;

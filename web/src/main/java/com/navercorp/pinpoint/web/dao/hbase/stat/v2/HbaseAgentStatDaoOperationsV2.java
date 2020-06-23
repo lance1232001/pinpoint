@@ -98,7 +98,7 @@ public class HbaseAgentStatDaoOperationsV2 {
         }
     }
 
-    <S extends SampledAgentStatDataPoint> List<S> getSampledAgentStatList(AgentStatType agentStatType, ResultsExtractor<List<S>> resultExtractor, String agentId, Range range) {
+    public <S extends SampledAgentStatDataPoint> List<S> getSampledAgentStatList(AgentStatType agentStatType, ResultsExtractor<List<S>> resultExtractor, String agentId, Range range) {
         Objects.requireNonNull(agentId, "agentId");
         Objects.requireNonNull(range, "range");
         Objects.requireNonNull(resultExtractor, "resultExtractor");
@@ -109,7 +109,7 @@ public class HbaseAgentStatDaoOperationsV2 {
         return hbaseOperations2.findParallel(agentStatTableName, scan, this.operationFactory.getRowKeyDistributor(), resultExtractor, AGENT_STAT_VER2_NUM_PARTITIONS);
     }
 
-    <T extends AgentStatDataPoint> AgentStatMapperV2<T> createRowMapper(AgentStatDecoder<T> decoder, Range range) {
+    public <T extends AgentStatDataPoint> AgentStatMapperV2<T> createRowMapper(AgentStatDecoder<T> decoder, Range range) {
         TimestampFilter filter = new RangeTimestampFilter(range);
         return new AgentStatMapperV2<>(this.operationFactory, decoder, filter);
     }
