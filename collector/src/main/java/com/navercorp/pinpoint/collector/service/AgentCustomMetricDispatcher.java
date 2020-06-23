@@ -16,23 +16,85 @@
 
 package com.navercorp.pinpoint.collector.service;
 
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.IntCounter;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.LongCounter;
+import com.navercorp.pinpoint.common.hbase.HbaseOperations2;
+import com.navercorp.pinpoint.common.hbase.TableNameProvider;
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.FieldDescriptor;
+import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.serializer.stat.AgentStatHbaseOperationFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Taejin Koo
  */
+@Service
 public class AgentCustomMetricDispatcher {
 
-
     private final Logger logger = LoggerFactory.getLogger(HBaseAgentStatService.class.getName());
+
+
+    @Autowired
+    private HbaseOperations2 hbaseTemplate;
+
+    @Autowired
+    private TableNameProvider tableNameProvider;
+
+    @Autowired
+    private AgentStatHbaseOperationFactory agentStatHbaseOperationFactory;
+
+
+    private final List<AgentCustomMetricService> agentCustomMetricServiceList = new ArrayList<>();
+
+    @PostConstruct
+    public void setup() {
+
+        System.out.println("~~~~~~~~~~~~~~~~~~setup");
+        System.out.println(hbaseTemplate);
+        System.out.println(tableNameProvider);
+        System.out.println(agentStatHbaseOperationFactory);
+
+        CustomMetricServiceBuilder builder = new CustomMetricServiceBuilder();
+        FieldDescriptor fieldDescriptor = new FieldDescriptor(0, "tomcat34/request/count", IntCounter.class);
+        builder.addFieldDescriptor(fieldDescriptor);
+
+        builder.setHbaseTemplate(hbaseTemplate);
+        builder.setTableNameProvider(tableNameProvider);
+        builder.setAgentStatHbaseOperationFactory(agentStatHbaseOperationFactory);
+
+        AgentCustomMetricService build1 = builder.build();
+        agentCustomMetricServiceList.add(build1);
+
+        builder = new CustomMetricServiceBuilder();
+        fieldDescriptor = new FieldDescriptor(0, "tomcat45/request/count", LongCounter.class);
+        builder.addFieldDescriptor(fieldDescriptor);
+
+        builder.setHbaseTemplate(hbaseTemplate);
+        builder.setTableNameProvider(tableNameProvider);
+        builder.setAgentStatHbaseOperationFactory(agentStatHbaseOperationFactory);
+
+        AgentCustomMetricService build2 = builder.build();
+        agentCustomMetricServiceList.add(build2);
+    }
 
     public void save(AgentCustomMetricBo agentCustomMetricBo) {
         String agentId = agentCustomMetricBo.getAgentId();
 
-        System.out.println("======================" + agentCustomMetricBo);
+        for (AgentCustomMetricService agentCustomMetricService : agentCustomMetricServiceList) {
+            List<SimpleCustomMetricBo> map = agentCustomMetricService.map(agentCustomMetricBo);
+            agentCustomMetricService.save(agentId, map);
+
+        }
+
 
 //        List<IntCountMetricListBo> intCountMetricBoList = agentCustomMetricBo.getIntCountMetricBoList();
 //        insert(agentId, intCountMetricBoList);

@@ -16,12 +16,16 @@
 
 package com.navercorp.pinpoint.plugin.tomcat.interceptor;
 
-import com.navercorp.pinpoint.bootstrap.context.*;
-
+import com.navercorp.pinpoint.bootstrap.context.MethodDescriptor;
+import com.navercorp.pinpoint.bootstrap.context.Trace;
+import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.interceptor.AroundInterceptor;
 import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.CustomMetricRegistry;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.IntCounter;
+import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.LongCounter;
 import com.navercorp.pinpoint.bootstrap.plugin.request.RequestAdaptor;
 import com.navercorp.pinpoint.bootstrap.plugin.request.ServletRequestListenerInterceptorHelper;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.ParameterRecorder;
@@ -32,10 +36,12 @@ import com.navercorp.pinpoint.plugin.common.servlet.util.ParameterRecorderFactor
 import com.navercorp.pinpoint.plugin.common.servlet.util.ServletArgumentValidator;
 import com.navercorp.pinpoint.plugin.tomcat.TomcatConfig;
 import com.navercorp.pinpoint.plugin.tomcat.TomcatConstants;
+
 import org.apache.catalina.connector.Response;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author emeroad
@@ -51,8 +57,63 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
 
     private final ServletRequestListenerInterceptorHelper<HttpServletRequest> servletRequestListenerInterceptorHelper;
 
+    private final RequestCountMetric intCountMetric1;
+    private final RequestCountMetric2 intCountMetric2;
 
-    public StandardHostValveInvokeInterceptor(TraceContext traceContext, MethodDescriptor descriptor, RequestRecorderFactory<HttpServletRequest> requestRecorderFactory) {
+
+    private static class RequestCountMetric implements IntCounter {
+
+        private final String name;
+
+        public RequestCountMetric(String name) {
+            this.name = name;
+        }
+
+        private final AtomicInteger requestCount = new AtomicInteger();
+
+        public void request() {
+            int i = requestCount.incrementAndGet();
+            System.out.println("==================== " + i);
+        }
+
+        @Override
+        public int getValue() {
+            return requestCount.get();
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+    }
+
+    private static class RequestCountMetric2 implements LongCounter {
+
+        private final String name;
+
+        public RequestCountMetric2(String name) {
+            this.name = name;
+        }
+
+        private final AtomicInteger requestCount = new AtomicInteger();
+
+        public void request() {
+            int i = requestCount.incrementAndGet();
+            System.out.println("==================== " + i);
+        }
+
+        @Override
+        public long getValue() {
+            return requestCount.get();
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+    }
+
+    public StandardHostValveInvokeInterceptor(TraceContext traceContext, MethodDescriptor descriptor, RequestRecorderFactory<HttpServletRequest> requestRecorderFactory, CustomMetricRegistry customMetricMonitorRegistry) {
         this.methodDescriptor = descriptor;
         this.argumentValidator = new ServletArgumentValidator(logger, 0, HttpServletRequest.class, 1, HttpServletResponse.class);
         final TomcatConfig config = new TomcatConfig(traceContext.getProfilerConfig());
@@ -60,6 +121,18 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
         requestAdaptor = RemoteAddressResolverFactory.wrapRealIpSupport(requestAdaptor, config.getRealIpHeader(), config.getRealIpEmptyValue());
         ParameterRecorder<HttpServletRequest> parameterRecorder = ParameterRecorderFactory.newParameterRecorderFactory(config.getExcludeProfileMethodFilter(), config.isTraceRequestParam());
         this.servletRequestListenerInterceptorHelper = new ServletRequestListenerInterceptorHelper<HttpServletRequest>(TomcatConstants.TOMCAT, traceContext, requestAdaptor, config.getExcludeUrlFilter(), parameterRecorder, requestRecorderFactory);
+
+
+        intCountMetric1 = new RequestCountMetric("tomcat34/request/count");
+        boolean register = customMetricMonitorRegistry.register(intCountMetric1);
+
+        intCountMetric2 = new RequestCountMetric2("tomcat45/request/count");
+        register = customMetricMonitorRegistry.register(intCountMetric2);
+
+        if (register) {
+            logger.warn("Register success");
+        }
+
     }
 
     @Override
@@ -67,6 +140,10 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
         if (isDebug) {
             logger.beforeInterceptor(target, args);
         }
+
+        intCountMetric1.request();
+        intCountMetric2.request();
+
 
         if (!argumentValidator.validate(args)) {
             return;

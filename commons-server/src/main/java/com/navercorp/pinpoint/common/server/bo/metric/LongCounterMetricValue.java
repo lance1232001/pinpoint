@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package com.navercorp.pinpoint.collector.service;
-
-import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
-
-import java.util.List;
+package com.navercorp.pinpoint.common.server.bo.metric;
 
 /**
  * @author Taejin Koo
  */
-public interface AgentCustomMetricService {
+public class LongCounterMetricValue extends CustomMetricValue<Long> {
 
-    List<SimpleCustomMetricBo> map(AgentCustomMetricBo agentCustomMetricBo);
-
-    void save(String agentId, List<SimpleCustomMetricBo> simpleCustomMetricBos);
+    public LongCounterMetricValue(String name, Long value) {
+        super(name, value);
+    }
 
 }
+

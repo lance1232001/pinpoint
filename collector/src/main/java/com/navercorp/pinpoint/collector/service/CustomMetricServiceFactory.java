@@ -16,18 +16,8 @@
 
 package com.navercorp.pinpoint.collector.service;
 
-import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
-
-import java.util.List;
-
 /**
  * @author Taejin Koo
  */
-public interface AgentCustomMetricService {
-
-    List<SimpleCustomMetricBo> map(AgentCustomMetricBo agentCustomMetricBo);
-
-    void save(String agentId, List<SimpleCustomMetricBo> simpleCustomMetricBos);
-
+public class CustomMetricServiceFactory {
 }

@@ -52,12 +52,14 @@ public class DefaultCustomMetricRegistryFilter implements CustomMetricRegistryFi
     public boolean filter(CustomMetric value) {
         Assert.requireNonNull(value, "value");
 
-        for (AllowedSource allowedSource : allowedSourceList) {
-            if (contains(allowedSource, value)) {
-                return NOT_FILTERED;
-            }
-        }
-        return FILTERED;
+        return NOT_FILTERED;
+
+//        for (AllowedSource allowedSource : allowedSourceList) {
+//            if (contains(allowedSource, value)) {
+//                return NOT_FILTERED;
+//            }
+//        }
+//        return FILTERED;
     }
 
 

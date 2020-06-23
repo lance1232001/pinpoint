@@ -18,7 +18,7 @@ package com.navercorp.pinpoint.collector.handler.grpc;
 
 import com.navercorp.pinpoint.collector.handler.SimpleHandler;
 import com.navercorp.pinpoint.collector.mapper.grpc.metric.GrpcAgentCustomMetricMapper;
-import com.navercorp.pinpoint.collector.service.AgentCustomMetricService;
+import com.navercorp.pinpoint.collector.service.AgentCustomMetricDispatcher;
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.MessageFormatUtils;
@@ -44,11 +44,11 @@ public class GrpcAgentCustomMetricHandler implements SimpleHandler {
 
     private final GrpcAgentCustomMetricMapper agentCustomMetricMapper;
 
-    private final AgentCustomMetricService agentCustomMetricService;
+    private final AgentCustomMetricDispatcher agentCustomMetricDispatcher;
 
-    public GrpcAgentCustomMetricHandler(GrpcAgentCustomMetricMapper agentCustomMetricMapper, AgentCustomMetricService agentCustomMetricService) {
+    public GrpcAgentCustomMetricHandler(GrpcAgentCustomMetricMapper agentCustomMetricMapper, AgentCustomMetricDispatcher agentCustomMetricDispatcher) {
         this.agentCustomMetricMapper = Objects.requireNonNull(agentCustomMetricMapper, "agentCustomMetricMapper");
-        this.agentCustomMetricService = Objects.requireNonNull(agentCustomMetricService, "agentCustomMetricService");
+        this.agentCustomMetricDispatcher = Objects.requireNonNull(agentCustomMetricDispatcher, "agentCustomMetricDispatcher");
     }
 
     @Override
@@ -73,7 +73,7 @@ public class GrpcAgentCustomMetricHandler implements SimpleHandler {
             return;
         }
 
-        agentCustomMetricService.save(agentCustomMetricBo);
+        agentCustomMetricDispatcher.save(agentCustomMetricBo);
     }
 
 }

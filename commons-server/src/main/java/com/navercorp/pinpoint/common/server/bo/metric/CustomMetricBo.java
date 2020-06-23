@@ -11,6 +11,8 @@ public abstract class CustomMetricBo<T extends Number> implements AgentStatDataP
     private long startTimestamp;
     private long timestamp;
 
+    private String name;
+
     private AgentStatType agentStatType;
 
     private T value;
@@ -62,20 +64,12 @@ public abstract class CustomMetricBo<T extends Number> implements AgentStatDataP
         this.value = value;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CustomMetricBo<?> that = (CustomMetricBo<?>) o;
-        return startTimestamp == that.startTimestamp &&
-                timestamp == that.timestamp &&
-                Objects.equals(agentId, that.agentId) &&
-                Objects.equals(value, that.value);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(agentId, startTimestamp, timestamp, value);
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -84,9 +78,28 @@ public abstract class CustomMetricBo<T extends Number> implements AgentStatDataP
         sb.append("agentId='").append(agentId).append('\'');
         sb.append(", startTimestamp=").append(startTimestamp);
         sb.append(", timestamp=").append(timestamp);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", agentStatType=").append(agentStatType);
         sb.append(", value=").append(value);
         sb.append('}');
         return sb.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CustomMetricBo<?> that = (CustomMetricBo<?>) o;
+        return startTimestamp == that.startTimestamp &&
+                timestamp == that.timestamp &&
+                Objects.equals(agentId, that.agentId) &&
+                Objects.equals(name, that.name) &&
+                agentStatType == that.agentStatType &&
+                Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(agentId, startTimestamp, timestamp, name, agentStatType, value);
+    }
 }

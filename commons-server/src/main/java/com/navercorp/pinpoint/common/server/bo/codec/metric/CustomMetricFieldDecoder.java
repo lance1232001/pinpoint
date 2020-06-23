@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package com.navercorp.pinpoint.collector.service;
+package com.navercorp.pinpoint.common.server.bo.codec.metric;
 
-import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.buffer.Buffer;
+import com.navercorp.pinpoint.common.server.bo.codec.stat.AgentStatDataPointCodec;
 
 import java.util.List;
 
 /**
  * @author Taejin Koo
  */
-public interface AgentCustomMetricService {
+public interface CustomMetricFieldDecoder<T extends Number> {
 
-    List<SimpleCustomMetricBo> map(AgentCustomMetricBo agentCustomMetricBo);
+    String getMetricName();
 
-    void save(String agentId, List<SimpleCustomMetricBo> simpleCustomMetricBos);
+    void setEncodingStrategy(int code);
+
+    void decodeValues(AgentStatDataPointCodec codec, Buffer valueBuffer, int valueSize);
+
+    List<T> getDecodedValue();
 
 }

@@ -25,17 +25,15 @@ import java.util.Map;
 /**
  * @author Taejin Koo
  */
-public class AgentCustomMetricBo {
+public class AgentCustomMetricMessage {
 
     private String agentId;
 
     private long startTimestamp;
 
-    private Map<String, IntCountMetricListBo> intCountMetricListBoMap = new HashMap<>();
+    private Map<String, IntCounterMetricValueList> intCounterMetricValueListMap = new HashMap<>();
 
     private Map<String, LongCountMetricListBo> longCountMetricListBoMap = new HashMap<>();
-
-    private List<FieldDescriptor> fieldDescriptorList;
 
     public String getAgentId() {
         return agentId;
@@ -53,14 +51,14 @@ public class AgentCustomMetricBo {
         this.startTimestamp = startTimestamp;
     }
 
-    public boolean addIntCountMetricBo(IntCountMetricListBo intCountMetricBo) {
-        String name = intCountMetricBo.getName();
+    public boolean addIntCounterMetricValueList(IntCounterMetricValueList intCounterMetricValueList) {
+        String metricName = intCounterMetricValueList.getMetricName();
 
-        if (StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmpty(metricName)) {
             return false;
         }
 
-        IntCountMetricListBo oldValue = intCountMetricListBoMap.putIfAbsent(name, intCountMetricBo);
+        IntCounterMetricValueList oldValue = intCounterMetricValueListMap.putIfAbsent(metricName, intCounterMetricValueList);
         return oldValue == null;
     }
 
@@ -102,5 +100,6 @@ public class AgentCustomMetricBo {
         sb.append('}');
         return sb.toString();
     }
+
 
 }

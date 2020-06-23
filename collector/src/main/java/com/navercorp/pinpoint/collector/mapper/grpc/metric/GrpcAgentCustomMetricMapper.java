@@ -90,6 +90,8 @@ public class GrpcAgentCustomMetricMapper {
             return null;
         }
 
+        String metricName = intCountMetric.getName();
+
         IntCountMetricListBo intCountMetricListBo = new IntCountMetricListBo();
         for (int i = 0; i < valueSize; i++) {
             PIntValue pIntValue = intValuesList.get(i);
@@ -99,11 +101,12 @@ public class GrpcAgentCustomMetricMapper {
 
             if (intCountMetricBo != null) {
                 setBaseData(intCountMetricBo, header.getAgentId(), header.getAgentStartTime(), timestmap);
+                intCountMetricBo.setName(metricName);
+
                 intCountMetricListBo.add(intCountMetricBo);
             }
         }
 
-        String metricName = intCountMetric.getName();
         intCountMetricListBo.setName(metricName);
         return intCountMetricListBo;
     }
@@ -117,6 +120,8 @@ public class GrpcAgentCustomMetricMapper {
             return null;
         }
 
+        String metricName = longCountMetric.getName();
+
         LongCountMetricListBo longCountMetricListBo = new LongCountMetricListBo();
         for (int i = 0; i < valueSize; i++) {
             PLongValue pLongValue = longValuesList.get(i);
@@ -126,11 +131,12 @@ public class GrpcAgentCustomMetricMapper {
 
             if (longCountMetricBo != null) {
                 setBaseData(longCountMetricBo, header.getAgentId(), header.getAgentStartTime(), timestmap);
+                longCountMetricBo.setName(metricName);
+
                 longCountMetricListBo.add(longCountMetricBo);
             }
         }
 
-        String metricName = longCountMetric.getName();
         longCountMetricListBo.setName(metricName);
         return longCountMetricListBo;
     }

@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package com.navercorp.pinpoint.collector.service;
+package com.navercorp.pinpoint.common.server.bo.serializer.metric;
 
-import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.codec.metric.CustomMetricEncoder;
 import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
-
-import java.util.List;
+import com.navercorp.pinpoint.common.server.bo.serializer.stat.AgentStatSerializer;
 
 /**
  * @author Taejin Koo
  */
-public interface AgentCustomMetricService {
+public class CustomMetricSerializer extends AgentStatSerializer<SimpleCustomMetricBo> {
 
-    List<SimpleCustomMetricBo> map(AgentCustomMetricBo agentCustomMetricBo);
-
-    void save(String agentId, List<SimpleCustomMetricBo> simpleCustomMetricBos);
+    public CustomMetricSerializer(CustomMetricEncoder customMetricEncoder) {
+        super(customMetricEncoder);
+    }
 
 }
