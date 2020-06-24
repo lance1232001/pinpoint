@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,91 +16,80 @@
 
 package com.navercorp.pinpoint.common.server.bo.metric;
 
-import com.navercorp.pinpoint.common.util.StringUtils;
+import com.navercorp.pinpoint.common.server.bo.stat.AgentStatDataPoint;
+import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-/**
- * @author Taejin Koo
- */
-public class AgentCustomMetricBo {
+public class AgentCustomMetricBo implements AgentStatDataPoint {
+
+    private final AgentStatType agentStatType;
 
     private String agentId;
-
     private long startTimestamp;
+    private long timestamp;
 
-    private Map<String, IntCountMetricListBo> intCountMetricListBoMap = new HashMap<>();
+    private final Map<String, CustomMetricValue> customMetricValueMap = new HashMap<>();
 
-    private Map<String, LongCountMetricListBo> longCountMetricListBoMap = new HashMap<>();
+    public AgentCustomMetricBo(AgentStatType agentStatType) {
+        this.agentStatType = Objects.requireNonNull(agentStatType, "agentStatType");
+    }
 
-    private List<FieldDescriptor> fieldDescriptorList;
-
+    @Override
     public String getAgentId() {
         return agentId;
     }
 
+    @Override
+    public AgentStatType getAgentStatType() {
+        return agentStatType;
+    }
+
+    @Override
     public void setAgentId(String agentId) {
         this.agentId = agentId;
     }
 
+    @Override
     public long getStartTimestamp() {
         return startTimestamp;
     }
 
+    @Override
     public void setStartTimestamp(long startTimestamp) {
         this.startTimestamp = startTimestamp;
     }
 
-    public boolean addIntCountMetricBo(IntCountMetricListBo intCountMetricBo) {
-        String name = intCountMetricBo.getName();
+    @Override
+    public long getTimestamp() {
+        return timestamp;
+    }
 
-        if (StringUtils.isEmpty(name)) {
-            return false;
-        }
+    @Override
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 
-        IntCountMetricListBo oldValue = intCountMetricListBoMap.putIfAbsent(name, intCountMetricBo);
+    public boolean put(String key, CustomMetricValue value) {
+        final CustomMetricValue oldValue = customMetricValueMap.putIfAbsent(key, value);
         return oldValue == null;
     }
 
-    public IntCountMetricListBo getIntCountMetricBoList(String name) {
-        return intCountMetricListBoMap.get(name);
-    }
-
-    public boolean addLongCountMetricBo(LongCountMetricListBo longCountMetricBo) {
-        String name = longCountMetricBo.getName();
-
-        if (StringUtils.isEmpty(name)) {
-            return false;
-        }
-
-        LongCountMetricListBo oldValue = longCountMetricListBoMap.putIfAbsent(name, longCountMetricBo);
-        return oldValue == null;
-    }
-
-
-    public LongCountMetricListBo getLongCountMetricBoList(String name) {
-        return longCountMetricListBoMap.get(name);
-    }
-
-    public List<FieldDescriptor> getFieldDescriptorList() {
-        return fieldDescriptorList;
-    }
-
-    public void setFieldDescriptorList(List<FieldDescriptor> fieldDescriptorList) {
-        this.fieldDescriptorList = fieldDescriptorList;
+    public CustomMetricValue get(String key) {
+        return customMetricValueMap.get(key);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AgentCustomMetricBo{");
-        sb.append("agentId='").append(agentId).append('\'');
-        sb.append(", startTimestamp=").append(startTimestamp);
-        sb.append(", intCountMetricListBoMap=").append(intCountMetricListBoMap);
-        sb.append(", longCountMetricListBoMap=").append(longCountMetricListBoMap);
-        sb.append('}');
-        return sb.toString();
+        return "AgentCustomMetricBo{" +
+                "agentStatType=" + agentStatType +
+                ", agentId='" + agentId + '\'' +
+                ", startTimestamp=" + startTimestamp +
+                ", timestamp=" + timestamp +
+                ", customMetricValueMap=" + customMetricValueMap +
+                '}';
     }
-
 }
+

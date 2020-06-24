@@ -16,12 +16,11 @@
 
 package com.navercorp.pinpoint.collector.mapper.grpc.metric;
 
-import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
-import com.navercorp.pinpoint.common.server.bo.metric.LongCountMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.LongCountMetricListBo;
-import com.navercorp.pinpoint.common.server.bo.stat.AgentStatDataPoint;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricMessage;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCounterMetricValue;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCounterMetricValueList;
+import com.navercorp.pinpoint.common.server.bo.metric.LongCounterMetricValue;
+import com.navercorp.pinpoint.common.server.bo.metric.LongCounterMetricValueList;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetric;
 import com.navercorp.pinpoint.grpc.trace.PCustomMetricMessage;
@@ -43,7 +42,7 @@ public class GrpcAgentCustomMetricMapper {
     private final GrpcIntCountMetricMapper intCountMetricMapper = new GrpcIntCountMetricMapper();
     private final GrpcLongCountMetricMapper longCountMetricMapper = new GrpcLongCountMetricMapper();
 
-    public AgentCustomMetricBo map(final PCustomMetricMessage customMetricMessage, final Header header) {
+    public AgentCustomMetricMessage map(final PCustomMetricMessage customMetricMessage, final Header header) {
         if (customMetricMessage == null) {
             return null;
         }
@@ -57,31 +56,31 @@ public class GrpcAgentCustomMetricMapper {
             return null;
         }
 
-        AgentCustomMetricBo agentCustomMetricBo = new AgentCustomMetricBo();
-        agentCustomMetricBo.setAgentId(agentId);
-        agentCustomMetricBo.setStartTimestamp(startTimestamp);
+        AgentCustomMetricMessage agentCustomMetricMessage = new AgentCustomMetricMessage();
+        agentCustomMetricMessage.setAgentId(agentId);
+        agentCustomMetricMessage.setStartTimestamp(startTimestamp);
 
         List<PCustomMetric> customMetricsList = customMetricMessage.getCustomMetricsList();
         for (PCustomMetric pCustomMetric : customMetricsList) {
             if (pCustomMetric.hasIntCountMetric()) {
-                IntCountMetricListBo intCountMetricBo = createIntCountMetric(pCustomMetric, timestampList, header);
-                if (intCountMetricBo != null) {
-                    agentCustomMetricBo.addIntCountMetricBo(intCountMetricBo);
+                IntCounterMetricValueList intCounterMetricValueList = createIntCountMetric(pCustomMetric, timestampList, header);
+                if (intCounterMetricValueList != null) {
+                    agentCustomMetricMessage.addIntCounterMetricValueList(intCounterMetricValueList);
                 }
             } else if (pCustomMetric.hasLongCountMetric()) {
-                LongCountMetricListBo longCountMetric = createLongCountMetric(pCustomMetric, timestampList, header);
-                if (longCountMetric != null) {
-                    agentCustomMetricBo.addLongCountMetricBo(longCountMetric);
+                LongCounterMetricValueList longCounterMetricValueList = createLongCountMetric(pCustomMetric, timestampList, header);
+                if (longCounterMetricValueList != null) {
+                    agentCustomMetricMessage.addLongCounterMetricValueList(longCounterMetricValueList);
                 }
             } else {
                 continue;
             }
         }
 
-        return agentCustomMetricBo;
+        return agentCustomMetricMessage;
     }
 
-    private IntCountMetricListBo createIntCountMetric(PCustomMetric pCustomMetric, List<Long> timestampList, final Header header) {
+    private IntCounterMetricValueList createIntCountMetric(PCustomMetric pCustomMetric, List<Long> timestampList, final Header header) {
         PIntCountMetric intCountMetric = pCustomMetric.getIntCountMetric();
 
         List<PIntValue> intValuesList = intCountMetric.getValuesList();
@@ -90,28 +89,28 @@ public class GrpcAgentCustomMetricMapper {
             return null;
         }
 
-        String metricName = intCountMetric.getName();
+        final String metricName = intCountMetric.getName();
 
-        IntCountMetricListBo intCountMetricListBo = new IntCountMetricListBo();
+        final IntCounterMetricValueList intCounterMetricValueList = new IntCounterMetricValueList(metricName);
+        IntCounterMetricValue prevValue = null;
         for (int i = 0; i < valueSize; i++) {
             PIntValue pIntValue = intValuesList.get(i);
             Long timestmap = timestampList.get(i);
 
-            IntCountMetricBo intCountMetricBo = intCountMetricMapper.map(pIntValue);
+            IntCounterMetricValue intCounterMetricValue = intCountMetricMapper.map(pIntValue, prevValue);
+            if (intCounterMetricValue != null) {
+                intCounterMetricValue.setMetricName(metricName);
+                intCounterMetricValue.setTimestamp(timestmap);
 
-            if (intCountMetricBo != null) {
-                setBaseData(intCountMetricBo, header.getAgentId(), header.getAgentStartTime(), timestmap);
-                intCountMetricBo.setName(metricName);
-
-                intCountMetricListBo.add(intCountMetricBo);
+                intCounterMetricValueList.add(intCounterMetricValue);
             }
+            prevValue = intCounterMetricValue;
         }
 
-        intCountMetricListBo.setName(metricName);
-        return intCountMetricListBo;
+        return intCounterMetricValueList;
     }
 
-    private LongCountMetricListBo createLongCountMetric(PCustomMetric pCustomMetric, List<Long> timestampList, final Header header) {
+    private LongCounterMetricValueList createLongCountMetric(PCustomMetric pCustomMetric, List<Long> timestampList, final Header header) {
         PLongCountMetric longCountMetric = pCustomMetric.getLongCountMetric();
 
         List<PLongValue> longValuesList = longCountMetric.getValuesList();
@@ -120,31 +119,25 @@ public class GrpcAgentCustomMetricMapper {
             return null;
         }
 
-        String metricName = longCountMetric.getName();
+        final String metricName = longCountMetric.getName();
 
-        LongCountMetricListBo longCountMetricListBo = new LongCountMetricListBo();
+        final LongCounterMetricValueList longCounterMetricValueList = new LongCounterMetricValueList(metricName);
+        LongCounterMetricValue prevValue = null;
         for (int i = 0; i < valueSize; i++) {
             PLongValue pLongValue = longValuesList.get(i);
             Long timestmap = timestampList.get(i);
 
-            LongCountMetricBo longCountMetricBo = longCountMetricMapper.map(pLongValue);
+            LongCounterMetricValue longCounterMetricValue = longCountMetricMapper.map(pLongValue, prevValue);
+            if (longCounterMetricValue != null) {
+                longCounterMetricValue.setMetricName(metricName);
+                longCounterMetricValue.setTimestamp(timestmap);
 
-            if (longCountMetricBo != null) {
-                setBaseData(longCountMetricBo, header.getAgentId(), header.getAgentStartTime(), timestmap);
-                longCountMetricBo.setName(metricName);
-
-                longCountMetricListBo.add(longCountMetricBo);
+                longCounterMetricValueList.add(longCounterMetricValue);
             }
+            prevValue = longCounterMetricValue;
         }
 
-        longCountMetricListBo.setName(metricName);
-        return longCountMetricListBo;
-    }
-
-    private void setBaseData(AgentStatDataPoint agentStatDataPoint, String agentId, long startTimestamp, long timestamp) {
-        agentStatDataPoint.setAgentId(agentId);
-        agentStatDataPoint.setStartTimestamp(startTimestamp);
-        agentStatDataPoint.setTimestamp(timestamp);
+        return longCounterMetricValueList;
     }
 
 }

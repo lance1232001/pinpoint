@@ -18,9 +18,9 @@ package com.navercorp.pinpoint.common.server.bo.codec.metric;
 
 import com.navercorp.pinpoint.common.server.bo.codec.stat.strategy.StrategyAnalyzer;
 import com.navercorp.pinpoint.common.server.bo.codec.stat.strategy.UnsignedIntegerEncodingStrategy;
-import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricValue;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCounterMetricValue;
 
 import java.util.Objects;
 
@@ -42,17 +42,17 @@ public class IntCounterFieldEncoder implements CustomMetricFieldEncoder<Integer>
     }
 
     @Override
-    public void addValue(SimpleCustomMetricBo agentStatDataPoint) {
-        CustomMetricBo customMetricBo = agentStatDataPoint.get(metricName);
+    public void addValue(AgentCustomMetricBo agentCustomMetricBo) {
+        final CustomMetricValue customMetricValue = agentCustomMetricBo.get(metricName);
 
-        System.out.println("metricName:" + metricName + " ==== " + customMetricBo);
+        System.out.println("metricName:" + metricName + " ==== " + customMetricValue);
 
-        if (!(customMetricBo instanceof IntCountMetricBo)) {
-            throw new IllegalArgumentException(metricName + " must be IntCountMetricBo clazz");
+        if (!(customMetricValue instanceof IntCounterMetricValue)) {
+            throw new IllegalArgumentException(metricName + " must be IntCounterMetricValue clazz");
         }
 
-        IntCountMetricBo intCountMetricBo = (IntCountMetricBo) customMetricBo;
-        Integer value = intCountMetricBo.getValue();
+        IntCounterMetricValue intCounterMetricValue = (IntCounterMetricValue) customMetricValue;
+        Integer value = intCounterMetricValue.getValue();
 
         analyzerBuilder.addValue(value);
     }

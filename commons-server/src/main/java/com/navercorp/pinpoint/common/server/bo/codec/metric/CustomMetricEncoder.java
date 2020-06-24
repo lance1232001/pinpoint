@@ -17,12 +17,12 @@
 package com.navercorp.pinpoint.common.server.bo.codec.metric;
 
 import com.navercorp.pinpoint.common.server.bo.codec.stat.AgentStatEncoder;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
 
 /**
  * @author Taejin Koo
  */
-public class CustomMetricEncoder extends AgentStatEncoder<SimpleCustomMetricBo> {
+public class CustomMetricEncoder extends AgentStatEncoder<AgentCustomMetricBo> {
 
     public CustomMetricEncoder(CustomMetricCodec customMetricCodec) {
         super(customMetricCodec);

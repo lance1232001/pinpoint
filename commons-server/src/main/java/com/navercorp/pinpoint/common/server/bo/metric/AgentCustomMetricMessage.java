@@ -19,7 +19,6 @@ package com.navercorp.pinpoint.common.server.bo.metric;
 import com.navercorp.pinpoint.common.util.StringUtils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,9 +30,9 @@ public class AgentCustomMetricMessage {
 
     private long startTimestamp;
 
-    private Map<String, IntCounterMetricValueList> intCounterMetricValueListMap = new HashMap<>();
+    private final Map<String, IntCounterMetricValueList> intCounterMetricValueListMap = new HashMap<>();
 
-    private Map<String, LongCountMetricListBo> longCountMetricListBoMap = new HashMap<>();
+    private final Map<String, LongCounterMetricValueList> longCounterMetricValueListMap = new HashMap<>();
 
     public String getAgentId() {
         return agentId;
@@ -51,9 +50,9 @@ public class AgentCustomMetricMessage {
         this.startTimestamp = startTimestamp;
     }
 
+
     public boolean addIntCounterMetricValueList(IntCounterMetricValueList intCounterMetricValueList) {
         String metricName = intCounterMetricValueList.getMetricName();
-
         if (StringUtils.isEmpty(metricName)) {
             return false;
         }
@@ -62,44 +61,33 @@ public class AgentCustomMetricMessage {
         return oldValue == null;
     }
 
-    public IntCountMetricListBo getIntCountMetricBoList(String name) {
-        return intCountMetricListBoMap.get(name);
+    public IntCounterMetricValueList getIntCounterMetricValueList(String metricName) {
+        return intCounterMetricValueListMap.get(metricName);
     }
 
-    public boolean addLongCountMetricBo(LongCountMetricListBo longCountMetricBo) {
-        String name = longCountMetricBo.getName();
 
-        if (StringUtils.isEmpty(name)) {
+    public boolean addLongCounterMetricValueList(LongCounterMetricValueList longCounterMetricValueList) {
+        String metricName = longCounterMetricValueList.getMetricName();
+        if (StringUtils.isEmpty(metricName)) {
             return false;
         }
 
-        LongCountMetricListBo oldValue = longCountMetricListBoMap.putIfAbsent(name, longCountMetricBo);
+        LongCounterMetricValueList oldValue = longCounterMetricValueListMap.putIfAbsent(metricName, longCounterMetricValueList);
         return oldValue == null;
     }
 
-
-    public LongCountMetricListBo getLongCountMetricBoList(String name) {
-        return longCountMetricListBoMap.get(name);
-    }
-
-    public List<FieldDescriptor> getFieldDescriptorList() {
-        return fieldDescriptorList;
-    }
-
-    public void setFieldDescriptorList(List<FieldDescriptor> fieldDescriptorList) {
-        this.fieldDescriptorList = fieldDescriptorList;
+    public LongCounterMetricValueList getLongCounterMetricValueList(String metricName) {
+        return longCounterMetricValueListMap.get(metricName);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AgentCustomMetricBo{");
-        sb.append("agentId='").append(agentId).append('\'');
-        sb.append(", startTimestamp=").append(startTimestamp);
-        sb.append(", intCountMetricListBoMap=").append(intCountMetricListBoMap);
-        sb.append(", longCountMetricListBoMap=").append(longCountMetricListBoMap);
-        sb.append('}');
-        return sb.toString();
+        return "AgentCustomMetricMessage{" +
+                "agentId='" + agentId + '\'' +
+                ", startTimestamp=" + startTimestamp +
+                ", intCounterMetricValueListMap=" + intCounterMetricValueListMap +
+                ", longCounterMetricValueListMap=" + longCounterMetricValueListMap +
+                '}';
     }
-
-
+    
 }

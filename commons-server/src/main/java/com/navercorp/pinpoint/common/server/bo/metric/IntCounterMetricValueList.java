@@ -16,15 +16,13 @@
 
 package com.navercorp.pinpoint.common.server.bo.metric;
 
-import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
-
 /**
  * @author Taejin Koo
  */
 public class IntCounterMetricValueList extends CustomMetricValueList<IntCounterMetricValue> {
 
-    public IntCounterMetricValueList(String metricName, AgentStatType agentStatType) {
-        super(metricName, agentStatType);
+    public IntCounterMetricValueList(String metricName) {
+        super(metricName);
     }
 
 }

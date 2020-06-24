@@ -16,7 +16,6 @@
 
 package com.navercorp.pinpoint.common.server.bo.metric;
 
-import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
 import com.navercorp.pinpoint.common.util.Assert;
 import com.navercorp.pinpoint.common.util.CollectionUtils;
 
@@ -31,13 +30,12 @@ import java.util.Objects;
 public abstract class CustomMetricValueList<T extends CustomMetricValue> {
 
     private final String metricName;
-    private final AgentStatType agentStatType;
+
 
     private final List<T> customMetricValueList = new ArrayList<>();
 
-    public CustomMetricValueList(String metricName, AgentStatType agentStatType) {
+    public CustomMetricValueList(String metricName) {
         this.metricName = Objects.requireNonNull(metricName, "metricName");
-        this.agentStatType = Objects.requireNonNull(agentStatType, "agentStatType");
     }
 
     public String getMetricName() {
@@ -64,12 +62,10 @@ public abstract class CustomMetricValueList<T extends CustomMetricValue> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append("{");
-        sb.append("agentStatType=").append(agentStatType);
-        sb.append(", customMetricValueList=").append(customMetricValueList);
-        sb.append('}');
-        return sb.toString();
+        return "CustomMetricValueList{" +
+                "metricName='" + metricName + '\'' +
+                ", customMetricValueList=" + customMetricValueList +
+                '}';
     }
 
 }

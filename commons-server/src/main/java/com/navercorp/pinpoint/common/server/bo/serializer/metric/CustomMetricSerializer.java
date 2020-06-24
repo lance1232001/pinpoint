@@ -17,13 +17,13 @@
 package com.navercorp.pinpoint.common.server.bo.serializer.metric;
 
 import com.navercorp.pinpoint.common.server.bo.codec.metric.CustomMetricEncoder;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
 import com.navercorp.pinpoint.common.server.bo.serializer.stat.AgentStatSerializer;
 
 /**
  * @author Taejin Koo
  */
-public class CustomMetricSerializer extends AgentStatSerializer<SimpleCustomMetricBo> {
+public class CustomMetricSerializer extends AgentStatSerializer<AgentCustomMetricBo> {
 
     public CustomMetricSerializer(CustomMetricEncoder customMetricEncoder) {
         super(customMetricEncoder);

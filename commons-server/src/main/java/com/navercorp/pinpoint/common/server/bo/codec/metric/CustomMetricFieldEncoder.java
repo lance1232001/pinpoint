@@ -17,14 +17,14 @@
 package com.navercorp.pinpoint.common.server.bo.codec.metric;
 
 import com.navercorp.pinpoint.common.server.bo.codec.stat.strategy.StrategyAnalyzer;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
 
 /**
  * @author Taejin Koo
  */
 public interface CustomMetricFieldEncoder<T extends Number> {
 
-    void addValue(SimpleCustomMetricBo agentStatDataPoint);
+    void addValue(AgentCustomMetricBo agentCustomMetricBo);
 
     StrategyAnalyzer<T> getAnalyzer();
 

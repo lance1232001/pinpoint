@@ -20,6 +20,7 @@ import com.navercorp.pinpoint.collector.handler.SimpleHandler;
 import com.navercorp.pinpoint.collector.mapper.grpc.metric.GrpcAgentCustomMetricMapper;
 import com.navercorp.pinpoint.collector.service.AgentCustomMetricDispatcher;
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricMessage;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.MessageFormatUtils;
 import com.navercorp.pinpoint.grpc.server.ServerContext;
@@ -68,12 +69,12 @@ public class GrpcAgentCustomMetricHandler implements SimpleHandler {
         }
 
         Header header = ServerContext.getAgentInfo();
-        final AgentCustomMetricBo agentCustomMetricBo = this.agentCustomMetricMapper.map(customMetricMessage, header);
-        if (agentCustomMetricBo == null) {
+        final AgentCustomMetricMessage agentCustomMetricMessage = this.agentCustomMetricMapper.map(customMetricMessage, header);
+        if (agentCustomMetricMessage == null) {
             return;
         }
 
-        agentCustomMetricDispatcher.save(agentCustomMetricBo);
+        agentCustomMetricDispatcher.save(agentCustomMetricMessage);
     }
 
 }

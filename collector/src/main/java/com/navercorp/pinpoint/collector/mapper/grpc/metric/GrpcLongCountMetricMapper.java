@@ -16,28 +16,33 @@
 
 package com.navercorp.pinpoint.collector.mapper.grpc.metric;
 
-import com.navercorp.pinpoint.common.server.bo.metric.LongCountMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.LongCounterMetricValue;
 import com.navercorp.pinpoint.grpc.trace.PLongValue;
 
 /**
  * @author Taejin Koo
  */
-public class GrpcLongCountMetricMapper implements GrpcCustomMetricMapper<PLongValue, LongCountMetricBo> {
+public class GrpcLongCountMetricMapper implements GrpcCustomMetricMapper<PLongValue, LongCounterMetricValue> {
 
     @Override
-    public LongCountMetricBo map(PLongValue pLongValue) {
-        if (pLongValue == null) {
+    public LongCounterMetricValue map(PLongValue value, LongCounterMetricValue prevValue) {
+        if (value == null) {
             return null;
         }
 
-        LongCountMetricBo longCountMetricBo = new LongCountMetricBo();
-        if (pLongValue.getIsNotSet()) {
-            longCountMetricBo.setValue(null);
+        LongCounterMetricValue longCounterMetricValue = new LongCounterMetricValue();
+
+        if (value.getIsNotSet()) {
+            longCounterMetricValue.setValue(null);
         } else {
-            longCountMetricBo.setValue(pLongValue.getValue());
+            if (prevValue == null || prevValue.getValue() == null) {
+                longCounterMetricValue.setValue(value.getValue());
+            } else {
+                longCounterMetricValue.setValue(value.getValue() + prevValue.getValue());
+            }
         }
 
-        return longCountMetricBo;
+        return longCounterMetricValue;
     }
 
 }

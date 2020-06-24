@@ -18,9 +18,9 @@ package com.navercorp.pinpoint.common.server.bo.codec.metric;
 
 import com.navercorp.pinpoint.common.server.bo.codec.stat.strategy.StrategyAnalyzer;
 import com.navercorp.pinpoint.common.server.bo.codec.stat.strategy.UnsignedLongEncodingStrategy;
-import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.LongCountMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricValue;
+import com.navercorp.pinpoint.common.server.bo.metric.LongCounterMetricValue;
 
 import java.util.Objects;
 
@@ -40,17 +40,17 @@ public class LongCounterFieldEncoder implements CustomMetricFieldEncoder<Long> {
     }
 
     @Override
-    public void addValue(SimpleCustomMetricBo agentStatDataPoint) {
-        CustomMetricBo customMetricBo = agentStatDataPoint.get(metricName);
+    public void addValue(AgentCustomMetricBo agentCustomMetricBo) {
+        final CustomMetricValue customMetricValue = agentCustomMetricBo.get(metricName);
 
-        System.out.println("metricName:" + metricName + " ==== " + customMetricBo);
+        System.out.println("metricName:" + metricName + " ==== " + customMetricValue);
 
-        if (!(customMetricBo instanceof LongCountMetricBo)) {
+        if (!(customMetricValue instanceof LongCounterMetricValue)) {
             throw new IllegalArgumentException(metricName + " must be LongCountMetricBo clazz");
         }
 
-        LongCountMetricBo longCountMetricBo = (LongCountMetricBo) customMetricBo;
-        Long value = longCountMetricBo.getValue();
+        LongCounterMetricValue longCounterMetricValue = (LongCounterMetricValue) customMetricValue;
+        Long value = longCounterMetricValue.getValue();
 
         analyzerBuilder.addValue(value);
     }

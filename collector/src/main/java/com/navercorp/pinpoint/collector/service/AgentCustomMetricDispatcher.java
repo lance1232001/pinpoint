@@ -21,8 +21,8 @@ import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.LongCounter;
 import com.navercorp.pinpoint.common.hbase.HbaseOperations2;
 import com.navercorp.pinpoint.common.hbase.TableNameProvider;
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricMessage;
 import com.navercorp.pinpoint.common.server.bo.metric.FieldDescriptor;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
 import com.navercorp.pinpoint.common.server.bo.serializer.stat.AgentStatHbaseOperationFactory;
 
 import org.slf4j.Logger;
@@ -86,12 +86,12 @@ public class AgentCustomMetricDispatcher {
         agentCustomMetricServiceList.add(build2);
     }
 
-    public void save(AgentCustomMetricBo agentCustomMetricBo) {
-        String agentId = agentCustomMetricBo.getAgentId();
+    public void save(AgentCustomMetricMessage agentCustomMetricMessage) {
+        String agentId = agentCustomMetricMessage.getAgentId();
 
         for (AgentCustomMetricService agentCustomMetricService : agentCustomMetricServiceList) {
-            List<SimpleCustomMetricBo> map = agentCustomMetricService.map(agentCustomMetricBo);
-            agentCustomMetricService.save(agentId, map);
+            List<AgentCustomMetricBo> agentCustomMetricBoList = agentCustomMetricService.map(agentCustomMetricMessage);
+            agentCustomMetricService.save(agentId, agentCustomMetricBoList);
 
         }
 

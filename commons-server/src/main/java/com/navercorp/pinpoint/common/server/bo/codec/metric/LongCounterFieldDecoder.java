@@ -55,6 +55,10 @@ public class LongCounterFieldDecoder implements CustomMetricFieldDecoder<Long> {
         return decodedValue;
     }
 
+    @Override
+    public String getMetricName() {
+        return metricName;
+    }
 
 }
 

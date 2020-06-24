@@ -21,9 +21,5 @@ package com.navercorp.pinpoint.common.server.bo.metric;
  */
 public class LongCounterMetricValue extends CustomMetricValue<Long> {
 
-    public LongCounterMetricValue(String name, Long value) {
-        super(name, value);
-    }
-
 }
 

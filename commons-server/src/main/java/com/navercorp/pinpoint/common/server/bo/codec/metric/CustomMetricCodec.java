@@ -27,8 +27,10 @@ import com.navercorp.pinpoint.common.server.bo.codec.stat.header.AgentStatHeader
 import com.navercorp.pinpoint.common.server.bo.codec.stat.header.BitCountingHeaderEncoder;
 import com.navercorp.pinpoint.common.server.bo.codec.stat.strategy.StrategyAnalyzer;
 import com.navercorp.pinpoint.common.server.bo.codec.stat.v2.AgentStatCodecV2;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
 import com.navercorp.pinpoint.common.server.bo.metric.FieldDescriptor;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCounterMetricValue;
+import com.navercorp.pinpoint.common.server.bo.metric.LongCounterMetricValue;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
 
 import java.util.ArrayList;
@@ -38,13 +40,13 @@ import java.util.Objects;
 /**
  * @author Taejin Koo
  */
-public class CustomMetricCodec extends AgentStatCodecV2<SimpleCustomMetricBo> {
+public class CustomMetricCodec extends AgentStatCodecV2<AgentCustomMetricBo> {
 
     public CustomMetricCodec(AgentStatDataPointCodec codec, List<FieldDescriptor> fieldDescriptorList) {
         super(new CustomMetricCodecFactory(codec, fieldDescriptorList));
     }
 
-    private static class CustomMetricCodecFactory implements CodecFactory<SimpleCustomMetricBo> {
+    private static class CustomMetricCodecFactory implements CodecFactory<AgentCustomMetricBo> {
 
         private final AgentStatDataPointCodec codec;
         private final List<FieldDescriptor> fieldDescriptorList;
@@ -60,17 +62,17 @@ public class CustomMetricCodec extends AgentStatCodecV2<SimpleCustomMetricBo> {
         }
 
         @Override
-        public CodecEncoder<SimpleCustomMetricBo> createCodecEncoder() {
+        public CodecEncoder<AgentCustomMetricBo> createCodecEncoder() {
             return new Encoder(codec, fieldDescriptorList);
         }
 
         @Override
-        public CodecDecoder<SimpleCustomMetricBo> createCodecDecoder() {
+        public CodecDecoder<AgentCustomMetricBo> createCodecDecoder() {
             return new Decoder(codec, fieldDescriptorList);
         }
     }
 
-    public static class Encoder implements AgentStatCodec.CodecEncoder<SimpleCustomMetricBo> {
+    public static class Encoder implements AgentStatCodec.CodecEncoder<AgentCustomMetricBo> {
 
         private final AgentStatDataPointCodec codec;
 
@@ -92,7 +94,7 @@ public class CustomMetricCodec extends AgentStatCodecV2<SimpleCustomMetricBo> {
         }
 
         @Override
-        public void addValue(SimpleCustomMetricBo agentStatDataPoint) {
+        public void addValue(AgentCustomMetricBo agentStatDataPoint) {
             System.out.println("addValue:" + agentStatDataPoint);
 
             for (CustomMetricFieldEncoder customMetricFieldEncoder : customMetricFieldEncoderList) {
@@ -116,7 +118,7 @@ public class CustomMetricCodec extends AgentStatCodecV2<SimpleCustomMetricBo> {
         }
     }
 
-    public static class Decoder implements AgentStatCodec.CodecDecoder<SimpleCustomMetricBo> {
+    public static class Decoder implements AgentStatCodec.CodecDecoder<AgentCustomMetricBo> {
 
         private final AgentStatDataPointCodec codec;
         private final List<CustomMetricFieldDecoder> customMetricFieldDecoderList = new ArrayList<>();
@@ -137,7 +139,6 @@ public class CustomMetricCodec extends AgentStatCodecV2<SimpleCustomMetricBo> {
 
         @Override
         public void decode(Buffer valueBuffer, AgentStatHeaderDecoder headerDecoder, int valueSize) {
-
             for (CustomMetricFieldDecoder customMetricFieldDecoder : customMetricFieldDecoderList) {
                 customMetricFieldDecoder.setEncodingStrategy(headerDecoder.getCode());
             }
@@ -148,21 +149,37 @@ public class CustomMetricCodec extends AgentStatCodecV2<SimpleCustomMetricBo> {
         }
 
         @Override
-        public SimpleCustomMetricBo getValue(int index) {
-            SimpleCustomMetricBo simpleCustomMetricBo = new SimpleCustomMetricBo(AgentStatType.CUSTOM_TEST);
+        public AgentCustomMetricBo getValue(int index) {
+            AgentCustomMetricBo agentCustomMetricBo = new AgentCustomMetricBo(AgentStatType.CUSTOM_TEST);
 
 
             for (CustomMetricFieldDecoder customMetricFieldDecoder : customMetricFieldDecoderList) {
-                List decodedValue = customMetricFieldDecoder.getDecodedValue();
-
                 String metricName = customMetricFieldDecoder.getMetricName();
 
-//                simpleCustomMetricBo.put(metricName, new )
+                if (customMetricFieldDecoder instanceof IntCounterFieldDecoder) {
+                    IntCounterFieldDecoder intCounterFieldDecoder = (IntCounterFieldDecoder) customMetricFieldDecoder;
+                    final List<Integer> intList = intCounterFieldDecoder.getDecodedValue();
+
+                    final IntCounterMetricValue intCounterMetricValue = new IntCounterMetricValue();
+                    intCounterMetricValue.setMetricName(metricName);
+                    intCounterMetricValue.setValue(intList.get(index));
+
+                    agentCustomMetricBo.put(metricName, intCounterMetricValue);
+                } else if (customMetricFieldDecoder instanceof LongCounterFieldDecoder) {
+                    LongCounterFieldDecoder longCounterFieldDecoder = (LongCounterFieldDecoder) customMetricFieldDecoder;
+                    final List<Long> longList = longCounterFieldDecoder.getDecodedValue();
+
+                    final LongCounterMetricValue longCounterMetricValue = new LongCounterMetricValue();
+                    longCounterMetricValue.setMetricName(metricName);
+                    longCounterMetricValue.setValue(longList.get(index));
+
+                    agentCustomMetricBo.put(metricName, longCounterMetricValue);
+                }
 
             }
 
 
-            return null;
+            return agentCustomMetricBo;
         }
 
     }

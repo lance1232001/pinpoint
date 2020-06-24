@@ -16,38 +16,51 @@
 
 package com.navercorp.pinpoint.common.server.bo.metric;
 
-import java.util.Objects;
-
 /**
  * @author Taejin Koo
  */
 public abstract class CustomMetricValue<T extends Number> {
 
-    private final String name;
+    private String metricName;
 
-    private final T value;
+    private T value;
 
-    public CustomMetricValue(String name, T value) {
-        this.name = Objects.requireNonNull(name, "name");
-        this.value = value;
+    private long timestamp;
+
+    public CustomMetricValue() {
     }
 
-    public String getName() {
-        return name;
+    public String getMetricName() {
+        return metricName;
+    }
+
+    public void setMetricName(String metricName) {
+        this.metricName = metricName;
     }
 
     public T getValue() {
         return value;
     }
 
+    public void setValue(T value) {
+        this.value = value;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append("{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", value=").append(value);
-        sb.append('}');
-        return sb.toString();
+        return "CustomMetricValue{" +
+                "metricName='" + metricName + '\'' +
+                ", value=" + value +
+                ", timestamp=" + timestamp +
+                '}';
     }
 
 }

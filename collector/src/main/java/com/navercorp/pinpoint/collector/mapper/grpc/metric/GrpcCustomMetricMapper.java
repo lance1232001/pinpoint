@@ -21,6 +21,6 @@ package com.navercorp.pinpoint.collector.mapper.grpc.metric;
  */
 public interface GrpcCustomMetricMapper<P, R> {
 
-    R map(P pCustomMetric);
+    R map(P value, R prevValue);
 
 }

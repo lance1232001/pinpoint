@@ -21,8 +21,4 @@ package com.navercorp.pinpoint.common.server.bo.metric;
  */
 public class IntCounterMetricValue extends CustomMetricValue<Integer> {
 
-    public IntCounterMetricValue(String name, Integer value) {
-        super(name, value);
-    }
-
 }

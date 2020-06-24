@@ -16,28 +16,33 @@
 
 package com.navercorp.pinpoint.collector.mapper.grpc.metric;
 
-import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCounterMetricValue;
 import com.navercorp.pinpoint.grpc.trace.PIntValue;
 
 /**
  * @author Taejin Koo
  */
-public class GrpcIntCountMetricMapper implements GrpcCustomMetricMapper<PIntValue, IntCountMetricBo> {
+public class GrpcIntCountMetricMapper implements GrpcCustomMetricMapper<PIntValue, IntCounterMetricValue> {
 
     @Override
-    public IntCountMetricBo map(PIntValue pIntValue) {
-        if (pIntValue == null) {
+    public IntCounterMetricValue map(PIntValue value, IntCounterMetricValue prevValue) {
+        if (value == null) {
             return null;
         }
 
-        IntCountMetricBo intCountMetricBo = new IntCountMetricBo();
-        if (pIntValue.getIsNotSet()) {
-            intCountMetricBo.setValue(null);
+        IntCounterMetricValue intCounterMetricValue = new IntCounterMetricValue();
+
+        if (value.getIsNotSet()) {
+            intCounterMetricValue.setValue(null);
         } else {
-            intCountMetricBo.setValue(pIntValue.getValue());
+            if (prevValue == null || prevValue.getValue() == null) {
+                intCounterMetricValue.setValue(value.getValue());
+            } else {
+                intCounterMetricValue.setValue(value.getValue() + prevValue.getValue());
+            }
         }
 
-        return intCountMetricBo;
+        return intCounterMetricValue;
     }
 
 }

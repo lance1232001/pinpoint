@@ -17,7 +17,7 @@
 package com.navercorp.pinpoint.collector.service;
 
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricMessage;
 
 import java.util.List;
 
@@ -26,8 +26,8 @@ import java.util.List;
  */
 public interface AgentCustomMetricService {
 
-    List<SimpleCustomMetricBo> map(AgentCustomMetricBo agentCustomMetricBo);
+    List<AgentCustomMetricBo> map(AgentCustomMetricMessage agentCustomMetricMessage);
 
-    void save(String agentId, List<SimpleCustomMetricBo> simpleCustomMetricBos);
+    void save(String agentId, List<AgentCustomMetricBo> agentCustomMetricBoList);
 
 }

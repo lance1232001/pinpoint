@@ -23,8 +23,8 @@ import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
  */
 public class LongCounterMetricValueList extends CustomMetricValueList<LongCounterMetricValue> {
 
-    public LongCounterMetricValueList(String metricName, AgentStatType agentStatType) {
-        super(metricName, agentStatType);
+    public LongCounterMetricValueList(String metricName) {
+        super(metricName);
     }
 
 }

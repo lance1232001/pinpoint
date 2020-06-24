@@ -26,12 +26,12 @@ import com.navercorp.pinpoint.common.server.bo.codec.metric.CustomMetricCodec;
 import com.navercorp.pinpoint.common.server.bo.codec.metric.CustomMetricEncoder;
 import com.navercorp.pinpoint.common.server.bo.codec.stat.AgentStatDataPointCodec;
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricBo;
-import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricListBo;
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricMessage;
+import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricValue;
+import com.navercorp.pinpoint.common.server.bo.metric.CustomMetricValueList;
 import com.navercorp.pinpoint.common.server.bo.metric.FieldDescriptor;
-import com.navercorp.pinpoint.common.server.bo.metric.IntCountMetricListBo;
-import com.navercorp.pinpoint.common.server.bo.metric.LongCountMetricListBo;
-import com.navercorp.pinpoint.common.server.bo.metric.SimpleCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.IntCounterMetricValueList;
+import com.navercorp.pinpoint.common.server.bo.metric.LongCounterMetricValueList;
 import com.navercorp.pinpoint.common.server.bo.serializer.metric.CustomMetricSerializer;
 import com.navercorp.pinpoint.common.server.bo.serializer.stat.AgentStatHbaseOperationFactory;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
@@ -77,85 +77,76 @@ public class HbaseCustomMetricService implements AgentCustomMetricService {
 
 
     @Override
-    public List<SimpleCustomMetricBo> map(AgentCustomMetricBo agentCustomMetricBo) {
-//        AgentCustomMetricBo result = new AgentCustomMetricBo();
-//
-//        result.setFieldDescriptorList(fieldDescriptorList);
-//
-//        result.setAgentId(agentCustomMetricBo.getAgentId());
-//        result.setStartTimestamp(agentCustomMetricBo.getStartTimestamp());
-
-        List<CustomMetricListBo> params = new ArrayList<>();
-
-//        Map<Long, List<CustomMetricBo>> map = new HashMap<>();
-
-        MultiValueMap<Long, CustomMetricBo> multiValueMap = new LinkedMultiValueMap();
+    public List<AgentCustomMetricBo> map(AgentCustomMetricMessage agentCustomMetricMessage) {
+        MultiValueMap<Long, CustomMetricValue> multiValueMap = new LinkedMultiValueMap();
 
         for (FieldDescriptor fieldDescriptor : fieldDescriptorList) {
             Class<? extends CustomMetric> type = fieldDescriptor.getType();
             if (type == IntCounter.class) {
                 String name = fieldDescriptor.getName();
-                IntCountMetricListBo intCountMetricBoList = agentCustomMetricBo.getIntCountMetricBoList(name);
-                addMetricBo(multiValueMap, intCountMetricBoList);
+                final IntCounterMetricValueList intCounterMetricValueList = agentCustomMetricMessage.getIntCounterMetricValueList(name);
+                addMetricBo(multiValueMap, intCounterMetricValueList);
             } else if (type == LongCounter.class) {
                 String name = fieldDescriptor.getName();
-                LongCountMetricListBo longCountMetricBoList = agentCustomMetricBo.getLongCountMetricBoList(name);
-                addMetricBo(multiValueMap, longCountMetricBoList);
+                final LongCounterMetricValueList longCounterMetricValueList = agentCustomMetricMessage.getLongCounterMetricValueList(name);
+                addMetricBo(multiValueMap, longCounterMetricValueList);
             }
         }
 
-        List<SimpleCustomMetricBo> result = create(multiValueMap);
+        final String agentId = agentCustomMetricMessage.getAgentId();
+        final long startTimestamp = agentCustomMetricMessage.getStartTimestamp();
 
+        List<AgentCustomMetricBo> result = create(agentId, startTimestamp, multiValueMap);
         return result;
     }
 
-    private void addMetricBo(MultiValueMap<Long, CustomMetricBo> multiValueMap, CustomMetricListBo customMetricListBo) {
-        List<CustomMetricBo> list = customMetricListBo.getList();
-        for (CustomMetricBo customMetricBo : list) {
-            multiValueMap.add(customMetricBo.getTimestamp(), customMetricBo);
+    private void addMetricBo(MultiValueMap<Long, CustomMetricValue> multiValueMap, CustomMetricValueList customMetricValueList) {
+        final List<CustomMetricValue> valueList = customMetricValueList.getList();
+        for (CustomMetricValue value : valueList) {
+            multiValueMap.add(value.getTimestamp(), value);
         }
     }
 
-    private List<SimpleCustomMetricBo> create(MultiValueMap<Long, CustomMetricBo> multiValueMap) {
-        List<SimpleCustomMetricBo> result = new ArrayList<>(multiValueMap.size());
+    private List<AgentCustomMetricBo> create(String agentId, long startTimestamp, MultiValueMap<Long, CustomMetricValue> multiValueMap) {
+        List<AgentCustomMetricBo> result = new ArrayList<>(multiValueMap.size());
 
-        for (List<CustomMetricBo> values : multiValueMap.values()) {
-            SimpleCustomMetricBo simpleCustomMetricBo = new SimpleCustomMetricBo(AgentStatType.CUSTOM_TEST);
+        for (List<CustomMetricValue> values : multiValueMap.values()) {
+            AgentCustomMetricBo agentCustomMetricBo = new AgentCustomMetricBo(AgentStatType.CUSTOM_TEST);
 
-            CustomMetricBo first = ListUtils.getFirst(values);
+            CustomMetricValue first = ListUtils.getFirst(values);
             if (first == null) {
                 continue;
             }
 
-            simpleCustomMetricBo.setAgentId(first.getAgentId());
-            simpleCustomMetricBo.setStartTimestamp(first.getStartTimestamp());
-            simpleCustomMetricBo.setTimestamp(first.getTimestamp());
+            agentCustomMetricBo.setAgentId(agentId);
+            agentCustomMetricBo.setStartTimestamp(startTimestamp);
+            agentCustomMetricBo.setTimestamp(first.getTimestamp());
 
-            for (CustomMetricBo value : values) {
-                String name = value.getName();
-                simpleCustomMetricBo.put(name, value);
+            for (CustomMetricValue value : values) {
+                String metricName = value.getMetricName();
+                agentCustomMetricBo.put(metricName, value);
             }
 
-            result.add(simpleCustomMetricBo);
+            result.add(agentCustomMetricBo);
         }
 
         return result;
     }
 
     @Override
-    public void save(String agentId, List<SimpleCustomMetricBo> simpleCustomMetricBos) {
+    public void save(String agentId, List<AgentCustomMetricBo> agentCustomMetricBoList) {
         Objects.requireNonNull(agentId, "agentId");
         // Assert agentId
         CollectorUtils.checkAgentId(agentId);
 
-        SimpleCustomMetricBo first = ListUtils.getFirst(simpleCustomMetricBos);
+        AgentCustomMetricBo first = ListUtils.getFirst(agentCustomMetricBoList);
         if (first == null) {
             return;
         }
 
-        System.out.println("~~~~~~~~~~~~ SAVE:" + simpleCustomMetricBos);
+        System.out.println("~~~~~~~~~~~~ SAVE:" + agentCustomMetricBoList);
 
-        List<Put> puts = this.agentStatHbaseOperationFactory.createPuts(agentId, first.getAgentStatType(), simpleCustomMetricBos, serializer);
+        List<Put> puts = this.agentStatHbaseOperationFactory.createPuts(agentId, first.getAgentStatType(), agentCustomMetricBoList, serializer);
 //        if (!puts.isEmpty()) {
 //            TableName agentStatTableName = tableNameProvider.getTableName(HbaseTable.AGENT_STAT_VER2);
 //            this.hbaseTemplate.asyncPut(agentStatTableName, puts);
