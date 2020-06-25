@@ -19,6 +19,8 @@ package com.navercorp.pinpoint.common.server.bo.codec.metric;
 import com.navercorp.pinpoint.common.server.bo.codec.stat.AgentStatEncoder;
 import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
 
+import org.springframework.stereotype.Component;
+
 /**
  * @author Taejin Koo
  */

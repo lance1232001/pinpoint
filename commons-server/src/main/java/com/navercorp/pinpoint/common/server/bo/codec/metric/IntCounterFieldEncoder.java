@@ -64,6 +64,7 @@ public class IntCounterFieldEncoder implements CustomMetricFieldEncoder<Integer>
         }
 
         StrategyAnalyzer<Integer> strategyAnalyzer = analyzerBuilder.build();
+        this.strategyAnalyzer = strategyAnalyzer;
         return strategyAnalyzer;
     }
 

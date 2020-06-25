@@ -17,6 +17,8 @@
 package com.navercorp.pinpoint.web.dao.hbase.stat;
 
 
+import com.navercorp.pinpoint.common.server.bo.metric.AgentCustomMetricBo;
+import com.navercorp.pinpoint.common.server.bo.metric.NettyDirectMemoryBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ActiveTraceBo;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatDataPoint;
 import com.navercorp.pinpoint.common.server.bo.stat.CpuLoadBo;
@@ -29,6 +31,7 @@ import com.navercorp.pinpoint.common.server.bo.stat.JvmGcDetailedBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ResponseTimeBo;
 import com.navercorp.pinpoint.common.server.bo.stat.TransactionBo;
 import com.navercorp.pinpoint.common.server.bo.stat.TotalThreadCountBo;
+import com.navercorp.pinpoint.web.dao.metric.NettyDirectMemoryDao;
 import com.navercorp.pinpoint.web.dao.stat.ActiveTraceDao;
 import com.navercorp.pinpoint.web.dao.stat.AgentStatDao;
 import com.navercorp.pinpoint.web.dao.stat.CpuLoadDao;
@@ -313,4 +316,5 @@ abstract class AgentStatDaoFactory<T extends AgentStatDataPoint, D extends Agent
         @Override
         public boolean isSingleton() { return true; }
     }
+
 }

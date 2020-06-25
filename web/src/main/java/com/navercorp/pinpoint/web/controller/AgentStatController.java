@@ -17,7 +17,7 @@
 package com.navercorp.pinpoint.web.controller;
 
 
-
+import com.navercorp.pinpoint.common.server.bo.metric.NettyDirectMemoryBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ActiveTraceBo;
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatDataPoint;
 import com.navercorp.pinpoint.common.server.bo.stat.CpuLoadBo;
@@ -28,8 +28,10 @@ import com.navercorp.pinpoint.common.server.bo.stat.FileDescriptorBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcBo;
 import com.navercorp.pinpoint.common.server.bo.stat.JvmGcDetailedBo;
 import com.navercorp.pinpoint.common.server.bo.stat.ResponseTimeBo;
-import com.navercorp.pinpoint.common.server.bo.stat.TransactionBo;
 import com.navercorp.pinpoint.common.server.bo.stat.TotalThreadCountBo;
+import com.navercorp.pinpoint.common.server.bo.stat.TransactionBo;
+import com.navercorp.pinpoint.web.service.metric.NettyDirectMemoryChartService;
+import com.navercorp.pinpoint.web.service.metric.NettyDirectMemoryService;
 import com.navercorp.pinpoint.web.service.stat.ActiveTraceChartService;
 import com.navercorp.pinpoint.web.service.stat.ActiveTraceService;
 import com.navercorp.pinpoint.web.service.stat.AgentStatChartService;
@@ -50,15 +52,16 @@ import com.navercorp.pinpoint.web.service.stat.JvmGcDetailedService;
 import com.navercorp.pinpoint.web.service.stat.JvmGcService;
 import com.navercorp.pinpoint.web.service.stat.ResponseTimeChartService;
 import com.navercorp.pinpoint.web.service.stat.ResponseTimeService;
-import com.navercorp.pinpoint.web.service.stat.TransactionChartService;
-import com.navercorp.pinpoint.web.service.stat.TransactionService;
 import com.navercorp.pinpoint.web.service.stat.TotalThreadCountChartService;
 import com.navercorp.pinpoint.web.service.stat.TotalThreadCountService;
+import com.navercorp.pinpoint.web.service.stat.TransactionChartService;
+import com.navercorp.pinpoint.web.service.stat.TransactionService;
 import com.navercorp.pinpoint.web.util.TimeWindow;
 import com.navercorp.pinpoint.web.util.TimeWindowSampler;
 import com.navercorp.pinpoint.web.util.TimeWindowSlotCentricSampler;
 import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -259,4 +262,14 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
             super(totalThreadCountService, totalThreadCountChartService);
         }
     }
+
+    @Controller
+    @RequestMapping("/getAgentCustomMetric/nettyDirectMemory")
+    public static class NettyDirectMemoryController extends AgentStatController<NettyDirectMemoryBo> {
+
+        public NettyDirectMemoryController(NettyDirectMemoryService nettyDirectMemoryService, NettyDirectMemoryChartService nettyDirectMemoryChartService) {
+            super(nettyDirectMemoryService, nettyDirectMemoryChartService);
+        }
+    }
+
 }

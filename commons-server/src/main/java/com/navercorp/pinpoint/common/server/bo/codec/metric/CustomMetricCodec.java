@@ -107,13 +107,22 @@ public class CustomMetricCodec extends AgentStatCodecV2<AgentCustomMetricBo> {
             // encode header
             AgentStatHeaderEncoder headerEncoder = new BitCountingHeaderEncoder();
 
+            System.out.println("~~~ customMetricFieldEncoderList:" + customMetricFieldEncoderList);
+
             for (CustomMetricFieldEncoder customMetricFieldEncoder : customMetricFieldEncoderList) {
                 StrategyAnalyzer analyzer = customMetricFieldEncoder.getAnalyzer();
                 headerEncoder.addCode(analyzer.getBestStrategy().getCode());
             }
 
+            final byte[] header = headerEncoder.getHeader();
+            valueBuffer.putPrefixedBytes(header);
+
             for (CustomMetricFieldEncoder customMetricFieldEncoder : customMetricFieldEncoderList) {
-                codec.encodeValues(valueBuffer, customMetricFieldEncoder.getAnalyzer().getBestStrategy(), customMetricFieldEncoder.getAnalyzer().getValues());
+                final List values = customMetricFieldEncoder.getAnalyzer().getValues();
+
+                System.out.println("~~~values:" + values);
+
+                codec.encodeValues(valueBuffer, customMetricFieldEncoder.getAnalyzer().getBestStrategy(), values);
             }
         }
     }
@@ -135,10 +144,15 @@ public class CustomMetricCodec extends AgentStatCodecV2<AgentCustomMetricBo> {
                     customMetricFieldDecoderList.add(longCounterFieldEncoder);
                 }
             }
+
+            System.out.println("~~~~~~~~~~ customMetricFieldDecoderList:" + customMetricFieldDecoderList);
         }
 
         @Override
         public void decode(Buffer valueBuffer, AgentStatHeaderDecoder headerDecoder, int valueSize) {
+
+            System.out.println("~~~~~~~~ decode : " + valueSize);
+
             for (CustomMetricFieldDecoder customMetricFieldDecoder : customMetricFieldDecoderList) {
                 customMetricFieldDecoder.setEncodingStrategy(headerDecoder.getCode());
             }
@@ -150,6 +164,8 @@ public class CustomMetricCodec extends AgentStatCodecV2<AgentCustomMetricBo> {
 
         @Override
         public AgentCustomMetricBo getValue(int index) {
+            System.out.println("~~~~~~~~ getValue:" + index);
+
             AgentCustomMetricBo agentCustomMetricBo = new AgentCustomMetricBo(AgentStatType.CUSTOM_TEST);
 
 

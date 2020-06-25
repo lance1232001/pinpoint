@@ -56,7 +56,7 @@ public abstract class CustomMetricValue<T extends Number> {
 
     @Override
     public String toString() {
-        return "CustomMetricValue{" +
+        return this.getClass().getSimpleName() + "{" +
                 "metricName='" + metricName + '\'' +
                 ", value=" + value +
                 ", timestamp=" + timestamp +

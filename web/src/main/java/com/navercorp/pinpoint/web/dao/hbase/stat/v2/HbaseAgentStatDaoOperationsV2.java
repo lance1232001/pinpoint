@@ -65,7 +65,7 @@ public class HbaseAgentStatDaoOperationsV2 {
         this.descriptor = Objects.requireNonNull(descriptor, "descriptor");
     }
 
-    <T extends AgentStatDataPoint> List<T> getAgentStatList(AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
+    public <T extends AgentStatDataPoint> List<T> getAgentStatList(AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
         Objects.requireNonNull(agentId, "agentId");
         Objects.requireNonNull(range, "range");
 
@@ -78,7 +78,7 @@ public class HbaseAgentStatDaoOperationsV2 {
         return ListListUtils.toList(intermediate, expectedSize);
     }
 
-    <T extends AgentStatDataPoint> boolean agentStatExists(AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
+    public <T extends AgentStatDataPoint> boolean agentStatExists(AgentStatType agentStatType, AgentStatMapperV2<T> mapper, String agentId, Range range) {
         Objects.requireNonNull(agentId, "agentId");
         Objects.requireNonNull(range, "range");
 
@@ -109,7 +109,7 @@ public class HbaseAgentStatDaoOperationsV2 {
         return hbaseOperations2.findParallel(agentStatTableName, scan, this.operationFactory.getRowKeyDistributor(), resultExtractor, AGENT_STAT_VER2_NUM_PARTITIONS);
     }
 
-    <T extends AgentStatDataPoint> AgentStatMapperV2<T> createRowMapper(AgentStatDecoder<T> decoder, Range range) {
+    public <T extends AgentStatDataPoint> AgentStatMapperV2<T> createRowMapper(AgentStatDecoder<T> decoder, Range range) {
         TimestampFilter filter = new RangeTimestampFilter(range);
         return new AgentStatMapperV2<>(this.operationFactory, decoder, filter);
     }

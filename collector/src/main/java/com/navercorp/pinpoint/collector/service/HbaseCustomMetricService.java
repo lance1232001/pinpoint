@@ -21,6 +21,7 @@ import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.IntCounter;
 import com.navercorp.pinpoint.bootstrap.plugin.monitor.metric.LongCounter;
 import com.navercorp.pinpoint.collector.util.CollectorUtils;
 import com.navercorp.pinpoint.common.hbase.HbaseOperations2;
+import com.navercorp.pinpoint.common.hbase.HbaseTable;
 import com.navercorp.pinpoint.common.hbase.TableNameProvider;
 import com.navercorp.pinpoint.common.server.bo.codec.metric.CustomMetricCodec;
 import com.navercorp.pinpoint.common.server.bo.codec.metric.CustomMetricEncoder;
@@ -37,6 +38,7 @@ import com.navercorp.pinpoint.common.server.bo.serializer.stat.AgentStatHbaseOpe
 import com.navercorp.pinpoint.common.server.bo.stat.AgentStatType;
 import com.navercorp.pinpoint.rpc.util.ListUtils;
 
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -144,17 +146,11 @@ public class HbaseCustomMetricService implements AgentCustomMetricService {
             return;
         }
 
-        System.out.println("~~~~~~~~~~~~ SAVE:" + agentCustomMetricBoList);
-
         List<Put> puts = this.agentStatHbaseOperationFactory.createPuts(agentId, first.getAgentStatType(), agentCustomMetricBoList, serializer);
-//        if (!puts.isEmpty()) {
-//            TableName agentStatTableName = tableNameProvider.getTableName(HbaseTable.AGENT_STAT_VER2);
-//            this.hbaseTemplate.asyncPut(agentStatTableName, puts);
-//        }
-
-
-        System.out.println("~~~~~~~~~~~~~~~~~ Put:" + puts);
-
+        if (!puts.isEmpty()) {
+            TableName agentStatTableName = tableNameProvider.getTableName(HbaseTable.AGENT_STAT_VER2);
+            this.hbaseTemplate.asyncPut(agentStatTableName, puts);
+        }
     }
 
 }

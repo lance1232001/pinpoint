@@ -74,16 +74,16 @@ public class AgentCustomMetricDispatcher {
         AgentCustomMetricService build1 = builder.build();
         agentCustomMetricServiceList.add(build1);
 
-        builder = new CustomMetricServiceBuilder();
-        fieldDescriptor = new FieldDescriptor(0, "tomcat45/request/count", LongCounter.class);
-        builder.addFieldDescriptor(fieldDescriptor);
-
-        builder.setHbaseTemplate(hbaseTemplate);
-        builder.setTableNameProvider(tableNameProvider);
-        builder.setAgentStatHbaseOperationFactory(agentStatHbaseOperationFactory);
-
-        AgentCustomMetricService build2 = builder.build();
-        agentCustomMetricServiceList.add(build2);
+//        builder = new CustomMetricServiceBuilder();
+//        fieldDescriptor = new FieldDescriptor(0, "tomcat45/request/count", LongCounter.class);
+//        builder.addFieldDescriptor(fieldDescriptor);
+//
+//        builder.setHbaseTemplate(hbaseTemplate);
+//        builder.setTableNameProvider(tableNameProvider);
+//        builder.setAgentStatHbaseOperationFactory(agentStatHbaseOperationFactory);
+//
+//        AgentCustomMetricService build2 = builder.build();
+//        agentCustomMetricServiceList.add(build2);
     }
 
     public void save(AgentCustomMetricMessage agentCustomMetricMessage) {

@@ -55,12 +55,14 @@ public class IntCounterFieldDecoder implements CustomMetricFieldDecoder<Integer>
     @Override
     public void decodeValues(AgentStatDataPointCodec codec, Buffer valueBuffer, int valueSize) {
         this.decodedValue = codec.decodeValues(valueBuffer, encodingStrategy, valueSize);
+
+        System.out.println("@@@@@@@decodeValues:" + decodedValue);
+
     }
 
     @Override
     public List<Integer> getDecodedValue() {
         return decodedValue;
     }
-
 
 }
