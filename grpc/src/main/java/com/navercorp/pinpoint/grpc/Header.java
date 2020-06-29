@@ -21,7 +21,9 @@ import com.navercorp.pinpoint.common.util.Assert;
 import io.grpc.Metadata;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Woonduk Kang(emeroad)
@@ -34,6 +36,7 @@ public class Header {
 
     // optional header
     public static final Metadata.Key<String> SOCKET_ID = newStringKey("socketid");
+    public static final Metadata.Key<String> SUPPORT_COMMAND_CODE = newStringKey("supportCommandCode");
 
     private static Metadata.Key<String> newStringKey(String s) {
         return Metadata.Key.of(s, Metadata.ASCII_STRING_MARSHALLER);
@@ -41,24 +44,36 @@ public class Header {
 
     public static final long SOCKET_ID_NOT_EXIST = -1;
 
+    public static final List<Integer> SUPPORT_COMMAND_CODE_LIST_NOT_EXIST = Collections.emptyList();
+
 
     private final String agentId;
     private final String applicationName;
     private final long agentStartTime;
 
     private final long socketId;
+    private final List<Integer> supportCommandCodeList;
 
     private final Map<String, Object> properties;
 
     public Header(String agentId, String applicationName, long agentStartTime, long socketId) {
-        this(agentId, applicationName, agentStartTime, socketId, Collections.<String, Object>emptyMap());
+        this(agentId, applicationName, agentStartTime, socketId, Collections.<Integer>emptyList(), Collections.<String, Object>emptyMap());
     }
 
     public Header(String agentId, String applicationName, long agentStartTime, long socketId, final Map<String, Object> properties) {
+        this(agentId, applicationName, agentStartTime, socketId, Collections.<Integer>emptyList(), properties);
+    }
+
+    public Header(String agentId, String applicationName, long agentStartTime, long socketId, List<Integer> supportCommandCodeList) {
+        this(agentId, applicationName, agentStartTime, socketId, supportCommandCodeList, Collections.<String, Object>emptyMap());
+    }
+
+    public Header(String agentId, String applicationName, long agentStartTime, long socketId, List<Integer> supportCommandCodeList, final Map<String, Object> properties) {
         this.agentId = Assert.requireNonNull(agentId, "agentId");
         this.applicationName = Assert.requireNonNull(applicationName, "applicationName");
         this.agentStartTime = agentStartTime;
         this.socketId = socketId;
+        this.supportCommandCodeList = Assert.requireNonNull(supportCommandCodeList, "supportCommandCodeList");
 
         this.properties = Assert.requireNonNull(properties, "properties");
     }
@@ -79,6 +94,10 @@ public class Header {
         return socketId;
     }
 
+    public List<Integer> getSupportCommandCodeList() {
+        return supportCommandCodeList;
+    }
+
     public Object get(String key) {
         return properties.get(key);
     }
@@ -94,6 +113,7 @@ public class Header {
                 ", applicationName='" + applicationName + '\'' +
                 ", agentStartTime=" + agentStartTime +
                 ", socketId=" + socketId +
+                ", supportCommandCodeList=" + supportCommandCodeList +
                 ", properties=" + properties +
                 '}';
     }
@@ -109,6 +129,7 @@ public class Header {
         if (socketId != header.socketId) return false;
         if (agentId != null ? !agentId.equals(header.agentId) : header.agentId != null) return false;
         if (applicationName != null ? !applicationName.equals(header.applicationName) : header.applicationName != null) return false;
+        if (supportCommandCodeList != null ? !supportCommandCodeList.equals(header.supportCommandCodeList) : header.supportCommandCodeList != null) return false;
         return properties != null ? properties.equals(header.properties) : header.properties == null;
     }
 
@@ -118,8 +139,8 @@ public class Header {
         result = 31 * result + (applicationName != null ? applicationName.hashCode() : 0);
         result = 31 * result + (int) (agentStartTime ^ (agentStartTime >>> 32));
         result = 31 * result + (int) (socketId ^ (socketId >>> 32));
+        result = 31 * result + (supportCommandCodeList != null ? supportCommandCodeList.hashCode() : 0);
         result = 31 * result + (properties != null ? properties.hashCode() : 0);
         return result;
     }
-
 }

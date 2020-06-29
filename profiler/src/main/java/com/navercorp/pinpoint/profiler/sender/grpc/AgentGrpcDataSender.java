@@ -18,6 +18,7 @@ package com.navercorp.pinpoint.profiler.sender.grpc;
 
 import com.navercorp.pinpoint.grpc.client.ChannelFactory;
 import com.navercorp.pinpoint.grpc.client.SocketIdClientInterceptor;
+import com.navercorp.pinpoint.grpc.client.SupportCommandCodeClientInterceptor;
 import com.navercorp.pinpoint.grpc.trace.AgentGrpc;
 import com.navercorp.pinpoint.grpc.trace.PAgentInfo;
 import com.navercorp.pinpoint.grpc.trace.PResult;
@@ -65,7 +66,7 @@ public class AgentGrpcDataSender extends GrpcDataSender implements EnhancedDataS
         super(host, port, executorQueueSize, messageConverter, channelFactory);
 
         this.agentInfoStub = AgentGrpc.newStub(managedChannel);
-        this.agentPingStub = newAgentPingStub();
+        this.agentPingStub = newAgentPingStub(profilerCommandServiceLocator);
 
         this.reconnectExecutor = reconnectExecutor;
         CommandServiceStubFactory commandServiceStubFactory = new CommandServiceStubFactory(managedChannel);
@@ -82,9 +83,13 @@ public class AgentGrpcDataSender extends GrpcDataSender implements EnhancedDataS
         }
     }
 
-    private AgentGrpc.AgentStub newAgentPingStub() {
+    private AgentGrpc.AgentStub newAgentPingStub(ProfilerCommandServiceLocator profilerCommandServiceLocator) {
         AgentGrpc.AgentStub agentStub = AgentGrpc.newStub(managedChannel);
-        return agentStub.withInterceptors(new SocketIdClientInterceptor());
+
+        final SocketIdClientInterceptor socketIdClientInterceptor = new SocketIdClientInterceptor();
+        final SupportCommandCodeClientInterceptor supportCommandCodeClientInterceptor = new SupportCommandCodeClientInterceptor(profilerCommandServiceLocator.getCommandServiceCodes());
+
+        return agentStub.withInterceptors(socketIdClientInterceptor, supportCommandCodeClientInterceptor);
     }
 
 

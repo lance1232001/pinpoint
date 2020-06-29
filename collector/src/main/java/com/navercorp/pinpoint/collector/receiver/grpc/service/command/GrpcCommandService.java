@@ -22,6 +22,7 @@ import com.navercorp.pinpoint.collector.cluster.ProfilerClusterManager;
 import com.navercorp.pinpoint.collector.cluster.zookeeper.ZookeeperClusterService;
 import com.navercorp.pinpoint.collector.receiver.grpc.PinpointGrpcServer;
 import com.navercorp.pinpoint.collector.receiver.grpc.PinpointGrpcServerRepository;
+import com.navercorp.pinpoint.common.util.CollectionUtils;
 import com.navercorp.pinpoint.grpc.Header;
 import com.navercorp.pinpoint.grpc.StatusError;
 import com.navercorp.pinpoint.grpc.StatusErrors;
@@ -36,6 +37,7 @@ import com.navercorp.pinpoint.grpc.trace.PCmdRequest;
 import com.navercorp.pinpoint.grpc.trace.PCmdResponse;
 import com.navercorp.pinpoint.grpc.trace.ProfilerCommandServiceGrpc;
 import com.navercorp.pinpoint.rpc.client.RequestManager;
+import com.navercorp.pinpoint.rpc.common.SocketStateCode;
 import com.navercorp.pinpoint.rpc.util.TimerFactory;
 
 import com.google.protobuf.Empty;
@@ -52,6 +54,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,7 +85,9 @@ public class GrpcCommandService extends ProfilerCommandServiceGrpc.ProfilerComma
         final Long transportId = getTransportId();
         final AgentInfo agentInfo = getAgentInfo();
 
-        logger.debug("{} => local. handleCommand(). transportId:{}", agentInfo, transportId);
+        final List<Integer> supportCommandCodeList = getSupportCommandCodeList();
+
+        logger.info("{} => local. handleCommand(). transportId:{}. supportCommandCodeSet:{}.", agentInfo, transportId, supportCommandCodeList);
 
         final RequestManager requestManager = new RequestManager(timer, 3000);
         final PinpointGrpcServer pinpointGrpcServer = new PinpointGrpcServer(getRemoteAddress(), agentInfo, requestManager, requestObserver);
@@ -100,6 +105,16 @@ public class GrpcCommandService extends ProfilerCommandServiceGrpc.ProfilerComma
                 if (serverCallStreamObserver.isReady()) {
                     logger.info("{} => local. ready() transportId:{}", agentInfo.getAgentKey(), transportId);
                     pinpointGrpcServer.connected();
+
+                    if (CollectionUtils.hasLength(supportCommandCodeList)) {
+                        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {} => local. execute handshake:{}", getAgentInfo().getAgentKey(), supportCommandCodeList);
+                        boolean handshakeSucceed = pinpointGrpcServer.handleHandshake(supportCommandCodeList);
+                        if (handshakeSucceed) {
+                            logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~handshakeSucceed");
+                            GrpcAgentConnection grpcAgentConnection = new GrpcAgentConnection(pinpointGrpcServer, supportCommandCodeList);
+                            profilerClusterManager.register(grpcAgentConnection);
+                        }
+                    }
                 }
             }
         });
@@ -112,6 +127,7 @@ public class GrpcCommandService extends ProfilerCommandServiceGrpc.ProfilerComma
                     logger.info("{} => local. execute handshake:{}", getAgentInfo().getAgentKey(), supportCommandServiceKeyList);
                     boolean handshakeSucceed = pinpointGrpcServer.handleHandshake(supportCommandServiceKeyList);
                     if (handshakeSucceed) {
+                        logger.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@handshakeSucceed");
                         GrpcAgentConnection grpcAgentConnection = new GrpcAgentConnection(pinpointGrpcServer, supportCommandServiceKeyList);
                         profilerClusterManager.register(grpcAgentConnection);
                     }
@@ -213,6 +229,11 @@ public class GrpcCommandService extends ProfilerCommandServiceGrpc.ProfilerComma
     private AgentInfo getAgentInfo() {
         Header header = ServerContext.getAgentInfo();
         return new AgentInfo(header.getApplicationName(), header.getAgentId(), header.getAgentStartTime());
+    }
+
+    private List<Integer> getSupportCommandCodeList() {
+        Header header = ServerContext.getAgentInfo();
+        return header.getSupportCommandCodeList();
     }
 
     private Long getTransportId() {
