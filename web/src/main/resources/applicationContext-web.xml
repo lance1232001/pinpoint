@@ -197,4 +197,10 @@
     <bean id="rewriteFilter" class="com.navercorp.pinpoint.web.servlet.RewriteForV2Filter">
         <constructor-arg index="0" value="true"/>
     </bean>
+
+    <beans profile="basicLogin">
+        <bean id="basicLoginConfig" class="com.navercorp.pinpoint.web.config.BasicLoginConfig"/>
+        <bean id="basicLoginService" class="com.navercorp.pinpoint.web.security.login.BasicLoginService"/>
+    </beans>
+
 </beans>
